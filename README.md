@@ -4,6 +4,7 @@
 # Supported Features
 - For loops
 - Repeat loops
+- Comment blocks (every developers favourite `/* Secret little message */`)
 - Almost every single constant and dynamic constant GML has to offer (including `global`).
 
 # To be added
