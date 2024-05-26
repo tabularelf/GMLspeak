@@ -19,7 +19,7 @@
 - Macros (Doable, but complicates any and all code caches, so won't be a core feature of GMLspeak. I may leave a note on how to achieve it.)
 - Adding all GML functions (I'm happy to provide constants, but not GML functions. You can expose those yourself.)
 - Static variables (Very complicated, not dealing with that)
-- Global functions (Doable but requires a whole separate system for checking every single GML string, compiling them in order of first usage, and then compiling the rest. Probably best for a separate library that utilises GMLspeak + Catspeak as a dependency)
+- Global Catspeak functions (Doable but requires a whole separate system for checking every single GML string before passing to GMLspeak, compiling them in order of first usage, and then compiling the rest. Probably best for a separate library that utilises GMLspeak + Catspeak as a dependency)
 - Rollback constants (Beta only anyway, so why?)
 
 ## Notes:
