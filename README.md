@@ -1,5 +1,5 @@
 # GMLspeak
- A GML parser/lexer addon for Catspeak! (**Experimental currently!!!**)
+ A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)! (**Experimental currently!!!**)
 
 # Supported Features
 - For loops
