@@ -13,6 +13,7 @@
 - Enums (would be nice)
 - Self/other support (ideally as arguments, user controllable)
 - with ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/22))
+- method() support (I have a way of making this work in Catspeak, without also accidentally allowing defining numbers as functions. But requires the previous two to be resolved.)
 
 # Will probably never be added
 - Macros (Doable, but complicates any and all code caches, so won't be a core feature of GMLspeak. I may leave a note on how to achieve it.)
