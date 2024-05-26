@@ -1,5 +1,5 @@
 # GMLspeak
- A GML parser/lexer addon for Catspeak!
+ A GML parser/lexer addon for Catspeak! (**Experimental currently!!!**)
 
 # Supported Features
 - For loops
@@ -19,6 +19,7 @@
 - Adding all GML functions (I'm happy to provide constants, but not GML functions)
 - Static variables (Very complicated, not dealing with that)
 - Global functions (Doable but requires a whole separate system for checking every single GML string, compiling them in order of first usage, and then compiling the rest)
+- Rollback constants (Beta only anyway, so why?)
 
 ## Notes:
-This does support a majority of constants, and this is done by hand.
+This does support a majority of constants, between LTS to latest. Ensuring that regardless of the version use, you will have most of them.
