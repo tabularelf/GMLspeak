@@ -629,6 +629,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"tf_linear", tf_linear
 	);
 	#endregion
+	#endregion
 	
 	#region OS, Devices and Browsers
 	interface.exposeConstant( 
@@ -1008,6 +1009,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	} catch(_) {
 		__gmlspeak_log("Blendmode Equations not available! Skipping...");	
 	}
+	#endregion
 	#endregion
 	#endregion
 }
