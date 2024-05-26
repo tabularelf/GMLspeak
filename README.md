@@ -17,10 +17,10 @@
 
 # Will probably never be added
 - Macros (Doable, but complicates any and all code caches, so won't be a core feature of GMLspeak. I may leave a note on how to achieve it.)
-- Enums (would be nice, complicated to support. See above)
 - Adding all GML functions (I'm happy to provide constants, but not GML functions. You can expose those yourself.)
 - Static variables (Very complicated, not dealing with that)
 - Global Catspeak functions (Doable but requires a whole separate system for checking every single GML string before passing to GMLspeak, compiling them in order of first usage, and then compiling the rest. Probably best for a separate library that utilises GMLspeak + Catspeak as a dependency)
+- Enums (would be nice, complicated to support. Similar issue with global Catspeak functions)
 - Rollback constants (Beta only anyway, so why?)
 
 ## Notes:
