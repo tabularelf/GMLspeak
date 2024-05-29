@@ -181,6 +181,7 @@ enum GMLspeakToken {
 	COMMENT_LONG,
 	COMMENT_LONG_END,
 	DOLLAR_SIGN,
+	WITH,
     /// @ignore
     __SIZE__
 }

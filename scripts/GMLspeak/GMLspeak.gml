@@ -2,7 +2,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
 	self.sharedGlobalStruct = undefined;
-	self.codegenType = GMLspeakGMLCompiler;
+	//self.codegenType = GMLspeakGMLCompiler;
 	useGMLGlobal(false);
 	
 	static __parentCompile = compile;
@@ -10,7 +10,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	static compile = function(ir) {
 		var result = __parentCompile(ir);
 		
-		return result;
+		return method({program:  result, args: [], global_: sharedGlobalStruct}, __gmlspeak_program__);//result;
 	}
 	
 	static compileGML = compile;
@@ -62,7 +62,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		//"default", GMLspeakToken.DEFAULT,
 		"/*", GMLspeakToken.COMMENT_LONG,
 		"*/", GMLspeakToken.COMMENT_LONG_END,
-		"$", GMLspeakToken.DOLLAR_SIGN
+		"$", GMLspeakToken.DOLLAR_SIGN,
+		"with", GMLspeakToken.WITH
 	);
 	
 	interface.exposeDynamicConstant(
@@ -78,7 +79,26 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	
 	interface.exposeFunction( 
 		"method",
-		__gmlspeak_method__
+		__gmlspeak_method__,
+		"$$__SCOPE_PUSH__$$",
+		function(scopeTarget) {
+			static _scopes = __gmlspeak_scopes();
+			ds_stack_push(_scopes.scopeStack, {
+				self_: _scopes.self_,
+				other_: _scopes.other_
+			});
+			
+			_scopes.other_ = _scopes.self_;
+			_scopes.self_ = scopeTarget;
+		},
+		"$$__SCOPE_POP__$$",
+		function() {
+			static _scopes = __gmlspeak_scopes();
+			var _oldScope = ds_stack_pop(_scopes.scopeStack);
+			
+			_scopes.other_ = _oldScope.other_;
+			_scopes.self_ = _oldScope.self_;
+		},
 	);
 	#endregion
 	

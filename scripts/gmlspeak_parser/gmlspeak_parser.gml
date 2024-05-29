@@ -175,7 +175,16 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             __parseStatements("while");
             var body = ir.popBlock();
             return ir.createWhile(condition, body, lexer.getLocation());
-        } else if (peeked == GMLspeakToken.REPEAT) {
+        } else if (peeked == GMLspeakToken.WITH) {
+			lexer.next();
+			var statement = __parseStatement();
+			ir.pushBlock();
+			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_PUSH__$$", lexer.getLocation()), [statement]), lexer.getLocation());
+			__parseStatements("with");
+			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_POP__$$", lexer.getLocation()), []), lexer.getLocation());
+			var block = ir.popBlock();
+			return block;
+		} else if (peeked == GMLspeakToken.REPEAT) {
             lexer.next();
 			var statement = __parseStatement();
 			var localIterator = ir.allocLocal(string_concat("$$", get_timer(), "$$"));
@@ -235,7 +244,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 }
             }
             __parseStatements("fun");
-            return ir.popFunction();
+            return ir.createCall(ir.createGet("method"), [ir.createGet("self"), ir.popFunction()]);
         } else {
             return __parseAssign();
         }

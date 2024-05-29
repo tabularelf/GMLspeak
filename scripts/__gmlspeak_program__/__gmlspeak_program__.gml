@@ -4,7 +4,7 @@ function __gmlspeak_program__(self_, other_ = undefined) {
 	static scopes = __gmlspeak_scopes();
 	var oldSelf = scopes.self_;
 	var oldOther = scopes.other_ ?? global_;
-	scopes.self_ = self_;
+	scopes.self_ = self_ ?? global_;
 	scopes.other_ = other_ ?? scopes.other_;
 	scopes.other_ ??= global_;
 	

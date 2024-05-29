@@ -8,7 +8,7 @@ function __gmlspeak_method__(_scope, _func) {
 	if (is_gmlspeak(_func)) { 
 		// Catspeak programs
 		var _newMethod = new __GMLspeakMethodClass(_scope, method_get_index(_func) == __catspeak_function__ ? 
-			method({program: result, args: [], global_ : sharedGlobalStruct}, __gmlspeak_program__) : _func
+			method({program: _func, args: [], global_ : method_get_self(_func)[$ "global_"] ?? undefined}, __gmlspeak_program__) : _func
 		);
 		 return method(_newMethod, __GMLspeakMethodExec);
 	} else if (is_method(_func)) && (instanceof(method_get_self(_func)) == "__GMLspeakMethodClass") { 
