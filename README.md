@@ -5,16 +5,16 @@
 - For loops
 - Repeat loops
 - Comment blocks (every developers favourite `/* Secret little message */`)
-- Almost every single constant and dynamic constant GML has to offer (including `global`).
+- Almost every single constant and dynamic constant GML has to offer (including custom `global`, sith a toggle to fully expose global).
+- custom self/other scope system. (head programs require passing self/other scope as arguments)
+- with() support
+- automatic methodizing
 
 # To be added
 - do/until loops
 - Switch/case (as oppose to match/case)
 - Unlimited non-named Arguments ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/52))
-- Self/other support (ideally as arguments, user controllable)
-- with ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/22))
-- method() support (I have a way of making this work in Catspeak, without also accidentally allowing defining numbers as functions. But requires the previous two to be resolved.)
-
+  
 # Will probably never be added
 - Macros (Doable, but complicates any and all code caches, so won't be a core feature of GMLspeak. I may leave a note on how to achieve it.)
 - Adding all GML functions (I'm happy to provide constants, but not GML functions. You can expose those yourself.)
