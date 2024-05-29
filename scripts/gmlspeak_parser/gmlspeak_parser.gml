@@ -19,7 +19,7 @@
 ///
 /// @param {Struct.CatspeakIRBuilder} builder
 ///   The Catspeak IR builder to write the program to.
-function GMLspeakParser(lexer, builder, interface) constructor {
+function GMLspeakParser(lexer, builder, interface = other.interface) constructor {
     if (CATSPEAK_DEBUG_MODE) {
         __catspeak_check_arg_struct_instanceof(
                 "lexer", lexer, "GMLspeakLexer");
@@ -167,34 +167,6 @@ function GMLspeakParser(lexer, builder, interface) constructor {
                 ifFalse = ir.createValue(undefined, lexer.getLocation());
             }
             return ir.createIf(condition, ifTrue, ifFalse, lexer.getLocation());
-        // else if (peeked == GMLspeakToken.CASE) {
-		//	lexer.next();
-		//	var condition = __parseCondition();
-		//	var statement = __parseStatement();
-		//	
-		//	return ir.createIf(condition, statement, ir.createValue(undefined, lexer.getLocation()), lexer.getLocation());
-		// else if (peeked == GMLspeakToken.SWITCH) {
-        //   lexer.next();
-        //   var condition = __parseExpression();
-        //   ir.pushBlock();
-        //   var statement = __parseStatements("switch")
-        //   var ifTrue = ir.popBlock();
-        //   var ifFalse;
-        //   if (lexer.peek() == GMLspeakToken.DEFAULT) {
-        //       lexer.next();
-        //       ir.pushBlock();
-        //      //if (lexer.peek() == GMLspeakToken.CASE) {
-        //      //    // for `else if` support
-        //      //    var elseIf = __parseExpression();
-        //      //    ir.createStatement(elseIf);
-        //      //} else {
-        //           __parseStatements("default");
-        //       //}
-        //       ifFalse = ir.popBlock();
-        //   } else {
-        //       ifFalse = ir.createValue(undefined, lexer.getLocation());
-        //   }
-        //   return ir.createIf(condition, ifTrue, ifFalse, lexer.getLocation());
         } else if (peeked == CatspeakToken.WHILE) {
             lexer.next();
 			__parseStatement();
@@ -312,6 +284,12 @@ function GMLspeakParser(lexer, builder, interface) constructor {
     /// @return {Struct}
     static __parseAssign = function () {
         var lhs = __parseOpLogical();
+		if (lhs.type == CatspeakTerm.GLOBAL) && (interface.database[$ lhs.name] == undefined) {
+			lhs.type = CatspeakTerm.VALUE;
+			lhs.value = lhs.name;
+			lhs = ir.createAccessor(ir.createGet("self"), lhs, lhs.dbg);
+		}
+		
         var peeked = lexer.peek();
         if (
             peeked == CatspeakToken.ASSIGN ||
@@ -610,7 +588,11 @@ function GMLspeakParser(lexer, builder, interface) constructor {
                 if (lexer.next() != CatspeakToken.BOX_RIGHT) {
                     __ex("expected closing ']' after accessor expression");
                 }
-                result = ir.createAccessor(collection, key, lexer.getLocation());
+				if (peeked == CatspeakToken.BOX_LEFT) {
+					result = ir.createAccessor(collection, key, lexer.getLocation());
+				} else {
+						
+				}
             } else if (peeked == CatspeakToken.DOT) {
                 // dot accessor syntax
                 lexer.next();
@@ -641,7 +623,14 @@ function GMLspeakParser(lexer, builder, interface) constructor {
             return ir.createValue(lexer.getValue(), lexer.getLocation());
         } else if (peeked == CatspeakToken.IDENT) {
             lexer.next();
-            return ir.createGet(lexer.getValue(), lexer.getLocation());
+			//if (interface.database[$ lexer.getValue()] == undefined) {
+			//	var key = lexer.getValue();
+			//	lexer.next();
+			//	var value = __parseAssign();
+			//	return ir.createCall(ir.createGet("$$SelfSet$$"), [key, value], lexer.getLocation());
+			//} else {
+				return ir.createGet(lexer.getValue(), lexer.getLocation());	
+			//}
         } else if (peeked == CatspeakToken.SELF) {
             lexer.next();
             return ir.createSelf(lexer.getLocation());

@@ -4,6 +4,27 @@ gmlspeak.interface.exposeFunction("string", string);
 gmlspeak.interface.exposeFunction("real", real);
 gmlspeak.interface.exposeFunction("get_timer", get_timer);
 gmlspeak.interface.exposeFunction("show_debug_message", show_debug_message);
+gmlspeak.interface.exposeFunction("variable_struct_get", variable_struct_get, "variable_struct_set", variable_struct_set);
+gmlspeak.interface.exposeFunction("variable_struct_get_names", variable_struct_get_names);
+
+var ir = gmlspeak.parseString(@'
+	foo = "bar";
+	printMe = method(id, function(str) {
+		show_debug_message(string(str) + " " + string(self));
+	});
+	show_debug_message(variable_struct_get_names(id));
+');
+
+var program = gmlspeak.compileGML(ir);
+program(id);
+printMe("Hello world from");
+
+
+
+
+
+
+
 
 var ir = gmlspeak.parseString(@'
 	var t = get_timer();

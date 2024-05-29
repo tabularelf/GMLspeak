@@ -1,6 +1,29 @@
 function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
+	self.sharedGlobalStruct = undefined;
+	self.codegenType = GMLspeakGMLCompiler;
+	useGMLGlobal(false);
+	
+	static __parentCompile = compile;
+	
+	static compile = function(ir) {
+		var result = __parentCompile(ir);
+		
+		return result;
+	}
+	
+	static compileGML = compile;
+	
+	static useGMLGlobal = function(value) {
+		if (value) {
+			sharedGlobalStruct =  (method(global, function() {return self;}))();
+			interface.exposeConstant("global", sharedGlobalStruct);
+		} else {
+			sharedGlobalStruct = sharedGlobal ?? {};
+			interface.exposeConstant("global", sharedGlobalStruct);	
+		}
+	}
 	
 	#region Keywords
 	renameKeyword(
@@ -14,7 +37,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	
 	removeKeyword(
 		"|>",
-		"<|"
+		"<|",
+		"self"
 	); 
 	
 	addKeyword(
@@ -38,6 +62,23 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		//"default", GMLspeakToken.DEFAULT,
 		"/*", GMLspeakToken.COMMENT_LONG,
 		"*/", GMLspeakToken.COMMENT_LONG_END,
+		"$", GMLspeakToken.DOLLAR_SIGN
+	);
+	
+	interface.exposeDynamicConstant(
+		"self", function() {
+			static _scopes = __gmlspeak_scopes();
+			return _scopes.self_;
+		},
+		"other", function() {
+			static _scopes = __gmlspeak_scopes();
+			return _scopes.other_;
+		},
+	);
+	
+	interface.exposeFunction( 
+		"method",
+		__gmlspeak_method__
 	);
 	#endregion
 	
@@ -45,11 +86,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	
 	#region General/Misc
 	// Global is passed by default, can be banned via interface.addBanList("global")
-	interface.exposeConstant("global", 
-		(method(global, function() {
-			return self;
-		}))()
-	);
 	
 	interface.exposeConstant( 
 		"gamespeed_fps", gamespeed_fps,

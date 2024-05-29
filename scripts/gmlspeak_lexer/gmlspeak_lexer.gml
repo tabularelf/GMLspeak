@@ -180,7 +180,7 @@ enum GMLspeakToken {
 	DEFAULT,
 	COMMENT_LONG,
 	COMMENT_LONG_END,
-	CUSTOM_OPERATOR,
+	DOLLAR_SIGN,
     /// @ignore
     __SIZE__
 }
