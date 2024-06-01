@@ -1,9 +1,18 @@
 // parse Catspeak code
+var _t = get_timer();
+catspeak = new CatspeakEnvironment();
+show_debug_message((get_timer() - _t) / 1000);
+
+var _t = get_timer();
 gmlspeak = new GMLspeakEnvironment();
+show_debug_message((get_timer() - _t) / 1000);
+
 gmlspeak.interface.exposeFunction("string", string);
 gmlspeak.interface.exposeFunction("real", real);
 gmlspeak.interface.exposeFunction("get_timer", get_timer);
 gmlspeak.interface.exposeFunction("show_debug_message", show_debug_message);
+catspeak.interface.exposeFunction("string", string);
+catspeak.interface.exposeFunction("show_debug_message", show_debug_message);
 gmlspeak.interface.exposeFunction(
 	"variable_struct_get_names", 
 	variable_struct_get_names, 
@@ -36,14 +45,42 @@ var ir = gmlspeak.parseString(@'
 	printMe = function(str) {
 		show_debug_message(string(str) + " " + string(foo));
 	};
+	
+	test();
 ');
 
+var ir2 = catspeak.parseString(@'
+	foo = "bar";
+	printMe = fun(str) {
+		show_debug_message(string(str) + " " + string(foo));
+	};
+');
 var program = gmlspeak.compileGML(ir);
-program();
+
+test = function() {
+	show_debug_message("AAAAAAAAAAAAA " + string(id));	
+}
+
+program(id);
+
+show_debug_message("---------");
+var _t = get_timer();
+
 printMe("Hello world from");
+show_debug_message((get_timer() - _t) / 1000);
+
+var program2 = catspeak.compileGML(ir2);
+var globals = program2.getGlobals();
+program2()
+
+var _t = get_timer();
+globals.printMe("Hello world from");
+show_debug_message((get_timer() - _t) / 1000);
+
 var struct = {toString: function() {
 		return variable_struct_get_names(self);
-	}
+	},
+	test: function() {show_debug_message(string(self))}
 }
 
 program(struct);

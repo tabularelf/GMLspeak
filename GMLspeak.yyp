@@ -49,11 +49,11 @@
     {"roomId":{"name":"Room1","path":"rooms/Room1/Room1.yy",},},
   ],
   "Folders": [
-    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"GMLspeak","folderPath":"folders/GMLspeak.yy","order":2,},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"Catspeak","folderPath":"folders/Catspeak.yy","order":3,},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"common","folderPath":"folders/Catspeak/common.yy","order":1,},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"compiler","folderPath":"folders/Catspeak/compiler.yy","order":2,},
     {"resourceType":"GMFolder","resourceVersion":"1.0","name":"runtime","folderPath":"folders/Catspeak/runtime.yy","order":3,},
+    {"resourceType":"GMFolder","resourceVersion":"1.0","name":"GMLspeak","folderPath":"folders/GMLspeak.yy","order":2,},
   ],
   "AudioGroups": [
     {"resourceType":"GMAudioGroup","resourceVersion":"1.3","name":"audiogroup_default","targets":-1,},

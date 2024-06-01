@@ -584,6 +584,12 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 if (lexer.next() != CatspeakToken.PAREN_RIGHT) {
                     __ex("expected closing ')' after function arguments");
                 }
+				if (result.type == CatspeakTerm.GLOBAL) && (interface.database[$ result.name] == undefined) {
+					result.type = CatspeakTerm.VALUE;
+					result.value = result.name;
+					result = ir.createAccessor(ir.createGet("self"), result, result.dbg);
+				}
+				
                 result = callNew
                         ? ir.createCallNew(result, args, lexer.getLocation())
                         : ir.createCall(result, args, lexer.getLocation());
