@@ -83,13 +83,28 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"$$__SCOPE_PUSH__$$",
 		function(scopeTarget) {
 			static _scopes = __gmlspeak_scopes();
-			ds_stack_push(_scopes.scopeStack, {
-				self_: _scopes.self_,
-				other_: _scopes.other_
-			});
-			
-			_scopes.other_ = _scopes.self_;
-			_scopes.self_ = scopeTarget;
+			if (is_struct(scopeTarget) || (instance_exists(scopeTarget) && !object_exists(scopeTarget))) {
+				ds_stack_push(_scopes.scopeStack, {
+					self_: _scopes.self_,
+					other_: _scopes.other_
+				});
+				
+				_scopes.other_ = _scopes.self_;
+				_scopes.self_ = scopeTarget;
+				return true;
+			} /*else if (object_exists(scopeTarget)) {
+				var instancesCount = instance_number(scopeTarget);
+				if (instancesCount == 0) {
+					return false;	
+				}
+				var instances = array_create(instancesCount, noone);
+				var i = 0;
+				repeat(instancesCount) {
+					instances[i] = instance_find(scopeTarget, i);
+					++i;
+				}
+				return instances;
+			}*/
 		},
 		"$$__SCOPE_POP__$$",
 		function() {
@@ -116,7 +131,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"spritespeed_framespergameframe", spritespeed_framespergameframe,
 		"timezone_local", timezone_local,
 		"timezone_utc", timezone_utc,
-		"webgl_enabled", webgl_enabled,
 		"GM_version", GM_version,
 		"GM_build_type", GM_build_type,
 		"GM_build_date", GM_build_date,
@@ -130,6 +144,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	);
 	
 	interface.exposeDynamicConstant( 
+		"webgl_enabled", function() {return webgl_enabled;},
 		"fps", function() {return fps;},
 		"fps_real", function() {return fps_real;},
 		"delta_time", function() {return delta_time;},
@@ -1053,7 +1068,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	}
 	#endregion
 	
-	#region New Blendmodes
+	#region New Blendmodes & Stencilops
 	try {
 		interface.exposeConstant( 
 			"bm_eq_add",				bm_eq_add,
@@ -1061,9 +1076,17 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			"bm_eq_max",				bm_eq_max,
 			"bm_eq_min",				bm_eq_min,
 			"bm_eq_reverse_subtract",	bm_eq_reverse_subtract,
+			"stencilop_keep",			stencilop_keep,
+			"stencilop_zero",			stencilop_zero,
+			"stencilop_replace",		stencilop_replace,
+			"stencilop_incr_wrap",		stencilop_incr_wrap,
+			"stencilop_decr_wrap",		stencilop_decr_wrap,
+			"stencilop_invert",			stencilop_invert,
+			"stencilop_incr",			stencilop_incr,
+			"stencilop_decr",			stencilop_decr
 		);
 	} catch(_) {
-		__gmlspeak_log("Blendmode Equations not available! Skipping...");	
+		__gmlspeak_log("Blendmode Equations & Stencil Ops not available! Skipping...");	
 	}
 	#endregion
 	#endregion

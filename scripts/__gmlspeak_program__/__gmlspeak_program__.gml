@@ -18,13 +18,16 @@ function __gmlspeak_program__(self_, other_ = undefined) {
 	var args_ = args;
 	var index_ = method_get_index(program);
 	var callee_ = method_get_self(program);
-	with(callee_) {
-		var result = script_execute_ext(index_, args_);	
+	try {
+		with(callee_) {
+			var result = script_execute_ext(index_, args_);	
+		}	
+	} finally {
+		array_resize(args, 0);
+		scopes.self_ = oldSelf;
+		scopes.other_ = oldOther;	
 	}
 	
 	// Clear arguments
-	array_resize(args, 0);
-	scopes.self_ = oldSelf;
-	scopes.other_ = oldOther;
 	return result;
 }
