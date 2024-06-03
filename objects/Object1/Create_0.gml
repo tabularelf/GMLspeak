@@ -98,6 +98,15 @@ show_debug_message("Normal");
 var _t = get_timer();
 programCatspeak();
 show_debug_message("Catspeak factorial: " + string((get_timer() - _t) / 1000));
+var globals = programCatspeak.getGlobals();
+var _t = get_timer();
+globals.factorial(1);
+globals.factorial(2);
+globals.factorial(3);
+globals.factorial(4);
+globals.factorial(5);
+globals.factorial(6);
+show_debug_message("Catspeak Manual factorial: " + string((get_timer() - _t) / 1000));
 var _t = get_timer();
 programGMLspeak(id);
 show_debug_message("GMLspeak factorial: " + string((get_timer() - _t) / 1000));
@@ -112,16 +121,30 @@ factorial(6);
 show_debug_message("GMLspeak Manual factorial: " + string((get_timer() - _t) / 1000));
 
 var _t = get_timer();
-var _struct = {};
-_struct.factorial = __gmlspeak_method__(_struct, factorial);
-_struct.factorial(1);
-_struct.factorial(2);
-_struct.factorial(3);
-_struct.factorial(4);
-_struct.factorial(5);
-_struct.factorial(6);
-show_debug_message("GMLspeak Manual factorial2: " + string((get_timer() - _t) / 1000));
-
-var _t = get_timer();
 nativeFunc();
 show_debug_message("Native factorial: " + string((get_timer() - _t) / 1000));	
+
+
+show_debug_message("Do/Until Test");
+var _code = @'
+var num = 0;
+do {
+	num += 1;
+} until (num > 32) 
+
+show_debug_message("Number GMLspeak result: " + string(num));
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+var _t = get_timer();
+program(self);
+show_debug_message("do/until GMLspeak: " + string((get_timer() - _t) / 1000));	
+
+var _t = get_timer();
+var num = 0;
+do {
+	num += 1;
+} until(num > 32) 
+
+show_debug_message("Number normal: result: " + string(num));
+show_debug_message("do/until Normal: " + string((get_timer() - _t) / 1000));	

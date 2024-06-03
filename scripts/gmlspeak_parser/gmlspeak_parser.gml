@@ -140,11 +140,25 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 value = __parseExpression();
             }
             return ir.createBreak(value, lexer.getLocation());
-        } else if (peeked == CatspeakToken.DO) {
+        } else if (peeked == GMLspeakToken.DO) {
             lexer.next();
-            ir.pushBlock(true);
+            ir.pushBlock();
             __parseStatements("do");
-            return ir.popBlock();
+            var block = ir.popBlock();
+			if (lexer.peek() != GMLspeakToken.UNTIL) {
+				__ex("expected 'until' after 'do' keyword");
+			}
+			lexer.next();
+			var condition = __parseCondition();
+			
+			// Hacking around lol
+			var op = __catspeak_operator_from_token(CatspeakToken.NOT_EQUAL);
+            var lhs = condition;
+            var rhs = ir.createValue(true);
+			condition = ir.createBinary(op, lhs, rhs, lexer.getLocation());
+			ir.createStatement(block);
+			var result = ir.createStatement(ir.createWhile(condition, block, lexer.getLocation()));
+			return result;
         } else if (peeked == CatspeakToken.IF) {
             lexer.next();
             var condition = __parseCondition();
@@ -201,7 +215,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			ir.createStatement(ir.createAssign(CatspeakAssign.PLUS, localIterator, incrValue));
             var body = ir.popBlock();
             return ir.createWhile(condition, body, lexer.getLocation());
-        } else if (peeked == CatspeakToken.FOR) {
+        } else if (peeked == GMLspeakToken.FOR) {
             lexer.next();
 			if (lexer.peek() == CatspeakToken.PAREN_LEFT) {
 				lexer.next();		

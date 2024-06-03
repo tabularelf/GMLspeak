@@ -54,6 +54,9 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"<>", CatspeakToken.NOT_EQUAL,
 		"begin", CatspeakToken.BRACE_LEFT,
 		"then", CatspeakToken.WHITESPACE,
+		"for", GMLspeakToken.FOR,
+		"do", GMLspeakToken.DO,
+		"until", GMLspeakToken.UNTIL,
 		//"static", GMLspeakToken.WHITESPACE, // TODO, apply some other logic
 		"end", CatspeakToken.BRACE_RIGHT,
 		"repeat", GMLspeakToken.REPEAT,
