@@ -6,6 +6,7 @@
     {"id":{"name":"is_gmlspeak","path":"scripts/is_gmlspeak/is_gmlspeak.yy",},"order":8,},
     {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},"order":0,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":1,},
+    {"id":{"name":"gmlspeak_method","path":"scripts/gmlspeak_method/gmlspeak_method.yy",},"order":9,},
     {"id":{"name":"scr_catspeak_location","path":"scripts/scr_catspeak_location/scr_catspeak_location.yy",},"order":1,},
     {"id":{"name":"scr_catspeak_init","path":"scripts/scr_catspeak_init/scr_catspeak_init.yy",},"order":6,},
     {"id":{"name":"scr_catspeak_sanity","path":"scripts/scr_catspeak_sanity/scr_catspeak_sanity.yy",},"order":2,},
