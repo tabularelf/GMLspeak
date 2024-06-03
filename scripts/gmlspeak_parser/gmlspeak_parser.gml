@@ -151,7 +151,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			lexer.next();
 			var condition = __parseCondition();
 			
-			// Hacking around lol
+			// TODO: Fix hack ass solution
 			var op = __catspeak_operator_from_token(CatspeakToken.NOT_EQUAL);
             var lhs = condition;
             var rhs = ir.createValue(true);
@@ -195,8 +195,8 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			ir.pushBlock();
 			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_PUSH__$$", lexer.getLocation()), [statement]), lexer.getLocation());
 			__parseStatements("with");
-			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_POP__$$", lexer.getLocation()), []), lexer.getLocation());
 			var block = ir.popBlock();
+			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_POP__$$", lexer.getLocation()), []), lexer.getLocation());
 			return block;
 		} else if (peeked == GMLspeakToken.REPEAT) {
             lexer.next();

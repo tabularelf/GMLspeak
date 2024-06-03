@@ -130,7 +130,8 @@ var _code = @'
 var num = 0;
 do {
 	num += 1;
-} until (num > 32) 
+	
+} until (num > 9999) 
 
 show_debug_message("Number GMLspeak result: " + string(num));
 ';
@@ -144,7 +145,7 @@ var _t = get_timer();
 var num = 0;
 do {
 	num += 1;
-} until(num > 32) 
+} until(num > 9999) 
 
 show_debug_message("Number normal: result: " + string(num));
 show_debug_message("do/until Normal: " + string((get_timer() - _t) / 1000));	
