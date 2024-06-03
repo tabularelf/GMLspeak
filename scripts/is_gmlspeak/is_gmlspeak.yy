@@ -6,6 +6,6 @@
   "isCompatibility": false,
   "parent": {
     "name": "GMLspeak",
-    "path": "folders/GMLspeak.yy",
+    "path": "GMLspeak.yyp",
   },
 }

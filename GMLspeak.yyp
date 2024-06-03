@@ -3,7 +3,7 @@
   "resourceVersion": "1.6",
   "name": "GMLspeak",
   "resources": [
-    {"id":{"name":"is_gmlspeak","path":"scripts/is_gmlspeak/is_gmlspeak.yy",},"order":8,},
+    {"id":{"name":"is_gmlspeak","path":"scripts/is_gmlspeak/is_gmlspeak.yy",},"order":4,},
     {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},"order":0,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":1,},
     {"id":{"name":"gmlspeak_method","path":"scripts/gmlspeak_method/gmlspeak_method.yy",},"order":9,},

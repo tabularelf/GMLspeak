@@ -5,7 +5,7 @@ function __gmlspeak_method__(_scope, _func) {
 		show_error("Scope cannot be " + string(_scope) + " in bind(). Must be a struct or instance!", true);	
 	}
 
-	if (is_gmlspeak(_func)) { 
+	if (is_gmlspeak(_func) || is_catspeak(_func)) { 
 		// Catspeak programs
 		 return method(new __GMLspeakMethodClass(
 			_scope,

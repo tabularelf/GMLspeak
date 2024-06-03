@@ -3,7 +3,7 @@
 function is_gmlspeak(value){
     if (is_method(value)) {
 		var index = method_get_index(value);
-		return (index == __catspeak_function__ || index == __gmlspeak_program__);
+		return (index == __gmlspeak_program__);
 	}
 	return false;
 }
