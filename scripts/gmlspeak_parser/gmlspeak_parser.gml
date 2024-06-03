@@ -233,8 +233,17 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             var loop = ir.createWhile(condition, body, lexer.getLocation());
 			return loop;
         } else if (peeked == GMLspeakToken.SWITCH) {
-            lexer.next();
+			lexer.next();
             var value = __parseExpression();
+			while (lexer.peek() != CatspeakToken.BRACE_RIGHT) {
+				lexer.next();
+				if (__isNot(GMLspeakToken.CASE)) {
+					__ex("expected opening 'case' after 'switch' keyword");	
+				}
+				// Skip over the word case
+				lexer.next();
+				var expression = __parseExpression();
+			}
             var conditions = __parseMatchArms();
             return ir.createMatch(value, conditions, lexer.getLocation());
         } else if (peeked == CatspeakToken.FUN) {

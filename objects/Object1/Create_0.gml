@@ -149,3 +149,15 @@ do {
 
 show_debug_message("Number normal: result: " + string(num));
 show_debug_message("do/until Normal: " + string((get_timer() - _t) / 1000));	
+
+show_debug_message("Switch/case");
+var _code = @'
+switch(2) {
+	case 0: return 1;
+	case 1: return 2;
+	case 2: return 3;
+}
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program(self)));
