@@ -1,5 +1,5 @@
-// Script assets have changed for v2.3.0 see
-// https://help.yoyogames.com/hc/en-us/articles/360005277377 for more information
+/// feather ignore all
+/// @ignore
 function __gmlspeak_method__(_scope, _func) {
 	if (!__catspeak_is_withable(_scope)) {
 		show_error("Scope cannot be " + string(_scope) + " in bind(). Must be a struct or instance!", true);	
@@ -29,6 +29,7 @@ function __gmlspeak_method__(_scope, _func) {
 	show_error("Invalid function. Expected GMLspeakFunction/CatspeakFunction/Method.\nGot \"" + string(_func) + "\". With type \"" + typeof(_func) + "\".", true);
 }
 
+/// @ignore
 function __GMLspeakMethodClass(_scope, _program, _global) constructor {
 	scope = _scope;
 	program = _program;
