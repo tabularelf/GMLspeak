@@ -7,12 +7,15 @@
 - Comment blocks (every developers favourite `/* Secret little message */`)
 - Almost every single constant and dynamic constant GML has to offer (including custom `global`, sith a toggle to fully expose global).
 - custom self/other scope system. (head programs require passing self/other scope as arguments)
-- with() support
+- with() support (one scope at a time currently, works with `break` due to a hackaround)
+- do/until loops
 - automatic methodizing
 
 # To be added
-- do/until loops
+- with support for objects.
+- with support for break/continue/return. ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/118))
 - Switch/case (as oppose to match/case)
+- methods with "global" scope self assign as "undefined" instead.
 - Unlimited non-named Arguments ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/52))
   
 # Will probably never be added
