@@ -1079,7 +1079,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	}
 	#endregion
 	
-	#region Particle System Assset
+	#region Particle System Asset
 	try {
 		interface.exposeConstant( 
 			"asset_particlesystem", asset_particlesystem,
