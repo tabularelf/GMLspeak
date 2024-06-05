@@ -10,7 +10,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	static compile = function(ir) {
 		var result = __parentCompile(ir);
 		
-		return method({program:  result, args: [], global_: sharedGlobalStruct}, __gmlspeak_program__);//result;
+		return method({program:  result, args: [], global_: sharedGlobalStruct}, __gmlspeak_program__);
 	}
 	
 	static compileGML = compile;
@@ -44,29 +44,30 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	addKeyword(
 		// Implemented as comments since these kind of act like two separate comments.
 		// What could go wrong? *foreshadows*
-		"#region", CatspeakToken.COMMENT,
-		"#endregion", CatspeakToken.COMMENT,
-	    "&&", CatspeakToken.AND,
-	    "||", CatspeakToken.OR,
-		":=", CatspeakToken.ASSIGN,
-	    "mod", CatspeakToken.REMAINDER,
-	    "not", CatspeakToken.NOT,
-		"<>", CatspeakToken.NOT_EQUAL,
-		"begin", CatspeakToken.BRACE_LEFT,
-		"then", CatspeakToken.WHITESPACE,
-		"for", GMLspeakToken.FOR,
-		"do", GMLspeakToken.DO,
-		"until", GMLspeakToken.UNTIL,
+		"#region",			CatspeakToken.COMMENT,
+		"#endregion",		CatspeakToken.COMMENT,
+	    "&&",				CatspeakToken.AND,
+	    "||",				CatspeakToken.OR,
+		":=",				CatspeakToken.ASSIGN,
+	    "mod",				CatspeakToken.REMAINDER,
+	    "not",				CatspeakToken.NOT,
+		"<>",				CatspeakToken.NOT_EQUAL,
+		"begin",			CatspeakToken.BRACE_LEFT,
+		"then",				CatspeakToken.WHITESPACE,
+		"for",				GMLspeakToken.FOR,
+		"do",				GMLspeakToken.DO,
+		"until",			GMLspeakToken.UNTIL,
 		//"static", GMLspeakToken.WHITESPACE, // TODO, apply some other logic
-		"end", CatspeakToken.BRACE_RIGHT,
-		"repeat", GMLspeakToken.REPEAT,
-		"switch", GMLspeakToken.SWITCH,
-		"case", GMLspeakToken.CASE,
-		"default", GMLspeakToken.DEFAULT,
-		"/*", GMLspeakToken.COMMENT_LONG,
-		"*/", GMLspeakToken.COMMENT_LONG_END,
-		"$", GMLspeakToken.DOLLAR_SIGN,
-		"with", GMLspeakToken.WITH
+		"end",				CatspeakToken.BRACE_RIGHT,
+		"repeat",			GMLspeakToken.REPEAT,
+		"switch",			GMLspeakToken.SWITCH,
+		"case",				GMLspeakToken.CASE,
+		"default",			GMLspeakToken.DEFAULT,
+		"/*",				GMLspeakToken.COMMENT_LONG,
+		"*/",				GMLspeakToken.COMMENT_LONG_END,
+		"$",				GMLspeakToken.DOLLAR_SIGN,
+		"with",				GMLspeakToken.WITH,
+		"room",				GMLspeakToken.ROOM_
 	);
 	
 	interface.exposeDynamicConstant(
@@ -84,39 +85,25 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"method",
 		__gmlspeak_method__,
 		"$$__SCOPE_PUSH__$$",
-		function(scopeTarget) {
-			static _scopes = __gmlspeak_scopes();
-			if (is_struct(scopeTarget) || (instance_exists(scopeTarget) && !object_exists(scopeTarget))) {
-				ds_stack_push(_scopes.scopeStack, {
-					self_: _scopes.self_,
-					other_: _scopes.other_
-				});
-				
-				_scopes.other_ = _scopes.self_;
-				_scopes.self_ = scopeTarget;
-				return true;
-			} /*else if (object_exists(scopeTarget)) {
-				var instancesCount = instance_number(scopeTarget);
-				if (instancesCount == 0) {
-					return false;	
-				}
-				var instances = array_create(instancesCount, noone);
-				var i = 0;
-				repeat(instancesCount) {
-					instances[i] = instance_find(scopeTarget, i);
-					++i;
-				}
-				return instances;
-			}*/
-		},
+		gmlspeak_push_scope,
 		"$$__SCOPE_POP__$$",
-		function() {
-			static _scopes = __gmlspeak_scopes();
-			var _oldScope = ds_stack_pop(_scopes.scopeStack);
+		gmlspeak_pop_scope,
+		"$$__ROOM__$$",
+		function(_value = undefined) {
+			if (_value == undefined) {
+				return room;
+			} 
 			
-			_scopes.other_ = _oldScope.other_;
-			_scopes.self_ = _oldScope.self_;
+			room = _value;
 		},
+		"$$__KEYBOARD_STRING__$$",
+		function(_value = undefined) {
+			if (_value == undefined) {
+				return keyboard_string;
+			}
+			
+			keyboard_string = _value;
+		}
 	);
 	#endregion
 	
@@ -126,24 +113,32 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	// Global is passed by default, can be banned via interface.addBanList("global")
 	
 	interface.exposeConstant( 
-		"gamespeed_fps", gamespeed_fps,
-		"tm_countvsyncs", tm_countvsyncs,
-		"tm_sleep", tm_sleep,
-		"gamespeed_microseconds", gamespeed_microseconds,
-		"spritespeed_framespersecond", spritespeed_framespersecond,
-		"spritespeed_framespergameframe", spritespeed_framespergameframe,
-		"timezone_local", timezone_local,
-		"timezone_utc", timezone_utc,
-		"GM_version", GM_version,
-		"GM_build_type", GM_build_type,
-		"GM_build_date", GM_build_date,
-		"GM_runtime_version", GM_runtime_version,
-		"pointer_invalid", pointer_invalid,
-		"pointer_null", pointer_null,
-		"dll_stdcall", dll_stdcall,
-		"dll_cdecl", dll_cdecl,
-		"ty_real", ty_real,
-		"ty_string", ty_string
+		"gamespeed_fps",					gamespeed_fps,
+		"tm_countvsyncs",					tm_countvsyncs,
+		"tm_sleep",							tm_sleep,
+		"gamespeed_microseconds",			gamespeed_microseconds,
+		"spritespeed_framespersecond",		spritespeed_framespersecond,
+		"spritespeed_framespergameframe",	spritespeed_framespergameframe,
+		"timezone_local",					timezone_local,
+		"timezone_utc",						timezone_utc,
+		"GM_version",						GM_version,
+		"GM_build_type",					GM_build_type,
+		"GM_build_date",					GM_build_date,
+		"GM_runtime_version",				GM_runtime_version,
+		"pointer_invalid",					pointer_invalid,
+		"pointer_null",						pointer_null,
+		"dll_stdcall",						dll_stdcall,
+		"dll_cdecl",						dll_cdecl,
+		"ty_real",							ty_real,
+		"ty_string",						ty_string,
+		"all",								all,
+		"noone",							noone,
+		"infinity",							infinity,
+		"pi",								pi,
+		"display_landscape_flipped",		display_landscape_flipped,
+		"display_portrait_flipped",			display_portrait_flipped,
+		"display_landscape",				display_landscape,
+		"display_portrait",					display_portrait
 	);
 	
 	interface.exposeDynamicConstant( 
@@ -170,7 +165,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"keyboard_key", function() {return keyboard_key;},
 		"keyboard_lastkey", function() {return keyboard_lastkey;},
 		"keyboard_lastchar", function() {return keyboard_lastchar;},
-		"keyboard_string", function() {return keyboard_string;},
+		//"keyboard_string", function() {return keyboard_string;},
 		
 	);
 	
@@ -592,13 +587,90 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"layerelementtype_sequence", layerelementtype_sequence,
 	);
 	
-	interface.exposeConstant( 
-		"room_first", room_first,
-		"room_last", room_last,
+	interface.exposeDynamicConstant( 
+		"room_first", function() {return room_first;},
+		"room_last", function() {return room_last;},
 	);
 	
-	interface.exposeDynamicConstant( 
-		"room", function() {return room;},
+	//interface.exposeDynamicConstant( 
+	//	"room", function() {return room;},
+	//);
+	#endregion
+	
+	#region Tiles
+	interface.exposeConstant( 
+		"tile_rotate",		tile_rotate,
+		"tile_mirror",		tile_mirror,
+		"tile_flip",		tile_flip,
+		"tile_index_mask",	tile_index_mask
+	);
+	#endregion
+	
+	#region bbox
+	interface.exposeConstant(
+		"bboxmode_automatic",	bboxmode_automatic,
+		"bboxmode_fullimage",	bboxmode_fullimage,
+		"bboxmode_manual",		bboxmode_manual,
+		"bboxkind_rectangular",	bboxkind_rectangular,
+		"bboxkind_ellipse",		bboxkind_ellipse,
+		"bboxkind_diamond",		bboxkind_diamond,
+		"bboxkind_precise",		bboxkind_precise
+
+	);
+	#endregion
+	
+	#region Physics
+	interface.exposeConstant( 
+		"phy_joint_anchor_1_x",				phy_joint_anchor_1_x,
+		"phy_joint_anchor_1_y",				phy_joint_anchor_1_y,
+		"phy_joint_anchor_2_x",				phy_joint_anchor_2_x,
+		"phy_joint_anchor_2_y",				phy_joint_anchor_2_y,
+		"phy_joint_reaction_force_x",		phy_joint_reaction_force_x,
+		"phy_joint_reaction_force_y",		phy_joint_reaction_force_y,
+		"phy_joint_reaction_torque",		phy_joint_reaction_torque,
+		"phy_joint_max_motor_force",		phy_joint_max_motor_force,
+		"phy_joint_max_motor_torque",		phy_joint_max_motor_torque,
+		"phy_joint_motor_force",			phy_joint_motor_force,
+		"phy_joint_motor_speed",			phy_joint_motor_speed,
+		"phy_joint_motor_torque",			phy_joint_motor_torque,
+		"phy_joint_angle",					phy_joint_angle,
+		"phy_joint_angle_limits",			phy_joint_angle_limits,
+		"phy_joint_upper_angle_limit",		phy_joint_upper_angle_limit,
+		"phy_joint_lower_angle_limit",		phy_joint_lower_angle_limit,
+		"phy_joint_translation",			phy_joint_translation,
+		"phy_joint_speed",					phy_joint_speed,
+		"phy_joint_damping_ratio",			phy_joint_damping_ratio,
+		"phy_joint_frequency",				phy_joint_frequency,
+		"phy_joint_length_1",				phy_joint_length_1,
+		"phy_joint_length_2",				phy_joint_length_2,
+		"phy_joint_max_torque",				phy_joint_max_torque,
+		"phy_joint_max_force",				phy_joint_max_force,
+		"phy_joint_max_length",				phy_joint_max_length,
+		"phy_particle_flag_water",			phy_particle_flag_water,
+		"phy_particle_flag_zombie",			phy_particle_flag_zombie,
+		"phy_particle_flag_wall",			phy_particle_flag_wall,
+		"phy_particle_flag_spring",			phy_particle_flag_spring,
+		"phy_particle_flag_elastic",		phy_particle_flag_elastic,
+		"phy_particle_flag_viscous",		phy_particle_flag_viscous,
+		"phy_particle_flag_powder",			phy_particle_flag_powder,
+		"phy_particle_flag_tensile",		phy_particle_flag_tensile,
+		"phy_particle_flag_colourmixing	",	phy_particle_flag_colourmixing,
+		"phy_particle_flag_colormixing",	phy_particle_flag_colormixing,
+		"phy_particle_data_flag_typeflags",	phy_particle_data_flag_typeflags,
+		"phy_particle_data_flag_position",	phy_particle_data_flag_position,
+		"phy_particle_data_flag_velocity",	phy_particle_data_flag_velocity,
+		"phy_particle_data_flag_colour",	phy_particle_data_flag_colour,
+		"phy_particle_data_flag_color",		phy_particle_data_flag_colour,
+		"phy_particle_data_flag_category",	phy_particle_data_flag_category,
+		"phy_particle_group_flag_solid",	phy_particle_group_flag_solid,
+		"phy_particle_group_flag_rigid",	phy_particle_group_flag_rigid,
+		"phy_debug_render_aabb",			phy_debug_render_aabb,
+		"phy_debug_render_collision_pairs",	phy_debug_render_collision_pairs,
+		"phy_debug_render_coms",			phy_debug_render_coms,
+		"phy_debug_render_core_shapes",		phy_debug_render_core_shapes,
+		"phy_debug_render_joints",			phy_debug_render_joints,
+		"phy_debug_render_obb",				phy_debug_render_obb,
+		"phy_debug_render_shapes",			phy_debug_render_shapes
 	);
 	#endregion
 	
@@ -1071,14 +1143,23 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	}
 	#endregion
 	
-	#region New Blendmodes & Stencilops
+	#region Blendmodes Equations
 	try {
 		interface.exposeConstant( 
 			"bm_eq_add",				bm_eq_add,
 			"bm_eq_subtract",			bm_eq_subtract,
 			"bm_eq_max",				bm_eq_max,
 			"bm_eq_min",				bm_eq_min,
-			"bm_eq_reverse_subtract",	bm_eq_reverse_subtract,
+			"bm_eq_reverse_subtract",	bm_eq_reverse_subtract
+		);
+	} catch(_) {
+		__gmlspeak_log("Blendmode Equations not available! Skipping...");	
+	}
+	#endregion
+	
+	#region Stencil ops
+	try {
+		interface.exposeConstant( 
 			"stencilop_keep",			stencilop_keep,
 			"stencilop_zero",			stencilop_zero,
 			"stencilop_replace",		stencilop_replace,
@@ -1089,8 +1170,31 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			"stencilop_decr",			stencilop_decr
 		);
 	} catch(_) {
-		__gmlspeak_log("Blendmode Equations & Stencil Ops not available! Skipping...");	
+		__gmlspeak_log("Stencil Operations not available! Skipping...");	
 	}
+	#endregion
+	
+	#region New gamepad constants
+	try {
+		interface.exposeConstant( 
+			"gp_home",				gp_home,
+			"gp_extra1",			gp_extra1,
+			"gp_extra2",			gp_extra2,
+			"gp_extra3",			gp_extra3,
+			"gp_extra4",			gp_extra4,
+			"gp_extra5",			gp_extra5,
+			"gp_extra6",			gp_extra6,
+			"gp_paddler",			gp_paddler,
+			"gp_paddlel",			gp_paddlel,
+			"gp_paddlerb",			gp_paddlerb,
+			"gp_paddlelb",			gp_paddlelb,
+			"gp_touchpadbutton",	gp_touchpadbutton
+
+		);
+	} catch(_) {
+		__gmlspeak_log("New gamepad constants not available! Skipping...");		
+	}
+	
 	#endregion
 	#endregion
 	#endregion

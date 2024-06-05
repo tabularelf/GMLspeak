@@ -1,5 +1,4 @@
-// Script assets have changed for v2.3.0 see
-// https://help.yoyogames.com/hc/en-us/articles/360005277377 for more information
+/// @return {Struct}
 function __gmlspeak_scopes() {
 	static _scopes = {
 		self_: undefined,
@@ -9,4 +8,17 @@ function __gmlspeak_scopes() {
 	};
 	
 	return _scopes;
+}
+
+
+/// @return {Struct}
+function gmlspeak_self() {
+	static _scopes = __gmlspeak_scopes();
+	return _scopes.self_;
+}
+
+/// @return {Struct}
+function gmlspeak_other() {
+	static _scopes = __gmlspeak_scopes();
+	return _scopes.other_;
 }

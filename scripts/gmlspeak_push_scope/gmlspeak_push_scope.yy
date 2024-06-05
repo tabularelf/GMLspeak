@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "gmlspeak_method",
+  "name": "gmlspeak_push_scope",
   "isDnD": false,
   "isCompatibility": false,
   "parent": {

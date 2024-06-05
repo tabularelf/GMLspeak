@@ -232,19 +232,44 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			var body = ir.popBlock();
             var loop = ir.createWhile(condition, body, lexer.getLocation());
 			return loop;
-        } else if (peeked == GMLspeakToken.SWITCH) {
+        } else if (peeked == GMLspeakToken.ROOM_) {
+			lexer.next();
+			if (lexer.peek() != CatspeakToken.ASSIGN)  {
+				return ir.createCall(ir.createGet("$$__ROOM__$$"), [], lexer.getLocation());	
+			}
+			lexer.next();
+			var value = __parseExpression();
+			return ir.createCall(ir.createGet("$$__ROOM__$$"), [value], lexer.getLocation());
+		} else if (peeked == GMLspeakToken.KEYBOARD_STRING_) {
+			lexer.next();
+			if (lexer.peek() != CatspeakToken.ASSIGN)  {
+				return ir.createCall(ir.createGet("$$__KEYBOARD_STRING__$$"), [], lexer.getLocation());	
+			}
+			lexer.next();
+			var value = __parseExpression();
+			return ir.createCall(ir.createGet("$$__KEYBOARD_STRING__$$"), [value], lexer.getLocation());
+		}else if (peeked == GMLspeakToken.SWITCH) {
 			lexer.next();
             var value = __parseExpression();
-			while (lexer.peek() != CatspeakToken.BRACE_RIGHT) {
-				lexer.next();
+			var conditions = [];
+			lexer.next();
+			while (__isNot(CatspeakToken.BRACE_RIGHT)) {
 				if (__isNot(GMLspeakToken.CASE)) {
 					__ex("expected opening 'case' after 'switch' keyword");	
 				}
 				// Skip over the word case
 				lexer.next();
-				var expression = __parseExpression();
+				ir.pushBlock();
+				while(__isNot(GMLspeakToken.CASE)) {
+					__parseStatement();
+				}
+				var result = ir.popBlock();
+				array_push(conditions, [value, result]);
+				lexer.next();
+				lexer.peek();
+				
 			}
-            var conditions = __parseMatchArms();
+            //var conditions = __parseMatchArms();
             return ir.createMatch(value, conditions, lexer.getLocation());
         } else if (peeked == CatspeakToken.FUN) {
             lexer.next();
@@ -565,13 +590,6 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         while (__isNot(CatspeakToken.BRACE_RIGHT) && !endOfSwitch) {
             var value;
             var prefix = lexer.next();
-            //if (prefix == CatspeakToken.DEFAULT) {
-            //    value = undefined;
-            //} else if (lexer.getLexeme() != "case" && lexer.getLexeme() != "return") {
-            //    __ex("expected 'case' keyword before non-default match arm");
-            //} else {
-            //    value = __parseExpression();
-            //}
             ir.pushBlock();
             endOfSwitch = __parseStatementsColon("case");
             var result = ir.popBlock();

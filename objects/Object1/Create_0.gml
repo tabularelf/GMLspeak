@@ -10,10 +10,15 @@ show_debug_message((get_timer() - _t) / 1000);
 gmlspeak.interface.exposeFunction("string", string);
 gmlspeak.interface.exposeFunction("real", real);
 gmlspeak.interface.exposeFunction("get_timer", get_timer);
-gmlspeak.interface.exposeFunction("show_debug_message", show_debug_message);
+gmlspeak.interface.exposeFunction("show_debug_message", show_debug_message,
+	"draw_self", 
+	function() {
+		with(gmlspeak_self()) return draw_self();
+	});
 catspeak.interface.exposeFunction("string", string);
 catspeak.interface.exposeFunction("show_debug_message", show_debug_message);
 gmlspeak.interface.exposeFunction(
+	"asset_get_index", asset_get_index,
 	"variable_struct_get_names", 
 	variable_struct_get_names, 
 	"struct_get_names", 
@@ -150,14 +155,26 @@ do {
 show_debug_message("Number normal: result: " + string(num));
 show_debug_message("do/until Normal: " + string((get_timer() - _t) / 1000));	
 
-show_debug_message("Switch/case");
+//show_debug_message("Switch/case");
+//var _code = @'
+//switch(2) {
+//	case 0: return 1;
+//	case 1: return 2;
+//	case 2: return 3;
+//}
+//';
+//
+//var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+//show_debug_message("Result: " + string(program(self)));
+
+show_debug_message("Room switch test");
 var _code = @'
-switch(2) {
-	case 0: return 1;
-	case 1: return 2;
-	case 2: return 3;
-}
-';
+show_debug_message(room);
+room = asset_get_index("Room2");';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message("Result: " + string(program(self)));
+
+drawProgram = gmlspeak.compileGML(gmlspeak.parseString(@'
+draw_self();
+'));
