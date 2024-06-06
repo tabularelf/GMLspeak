@@ -10,11 +10,11 @@
 - with() support (one scope at a time currently, works with `break` due to a hackaround)
 - do/until loops
 - automatic methodizing
+- Switch/case (as oppose to match/case)
 
 # To be added
 - with support for objects.
 - with support for break/continue/return. ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/118))
-- Switch/case (as oppose to match/case)
 - methods with "global" scope self assign as "undefined" instead.
 - Unlimited non-named Arguments ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/52))
   
