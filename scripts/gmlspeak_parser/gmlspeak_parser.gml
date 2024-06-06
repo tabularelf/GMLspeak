@@ -157,8 +157,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             var rhs = ir.createValue(true);
 			condition = ir.createBinary(op, lhs, rhs, lexer.getLocation());
 			ir.createStatement(block);
-			var result = ir.createStatement(ir.createWhile(condition, block, lexer.getLocation()));
-			return result;
+			return ir.createStatement(ir.createWhile(condition, block, lexer.getLocation()));
         } else if (peeked == CatspeakToken.IF) {
             lexer.next();
             var condition = __parseCondition();
@@ -195,18 +194,14 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			ir.pushBlock();
 			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_PUSH__$$", lexer.getLocation()), [statement]), lexer.getLocation());
 			__parseStatements("with");
-			var block = ir.popBlock();
-			ir.createStatement(ir.createCall(ir.createGet("$$__SCOPE_POP__$$", lexer.getLocation()), []), lexer.getLocation());
-			return block;
+			ir.createStatement(ir.popBlock());
+			return ir.createCall(ir.createGet("$$__SCOPE_POP__$$", lexer.getLocation()), []);
 		} else if (peeked == GMLspeakToken.REPEAT) {
             lexer.next();
 			var statement = __parseStatement();
 			var localIterator = ir.allocLocal(string_concat("$$", get_timer(), "$$"));
 			var incrValue = ir.createValue(1);
 			var conditionValue = ir.allocLocal(string_concat("$$", get_timer(), "$$"));
-
-			//ir.createStatement(localIterator); 
-			//ir.createStatement(conditionValue); 
             var condition = ir.createBinary(CatspeakOperator.LESS, localIterator, conditionValue, lexer.getLocation());
 			ir.createStatement(ir.createAssign(CatspeakAssign.PLUS, conditionValue, statement, lexer.getLocation()));
 			
@@ -232,44 +227,11 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			var body = ir.popBlock();
             var loop = ir.createWhile(condition, body, lexer.getLocation());
 			return loop;
-        } else if (peeked == GMLspeakToken.ROOM_) {
-			lexer.next();
-			if (lexer.peek() != CatspeakToken.ASSIGN)  {
-				return ir.createCall(ir.createGet("$$__ROOM__$$"), [], lexer.getLocation());	
-			}
-			lexer.next();
-			var value = __parseExpression();
-			return ir.createCall(ir.createGet("$$__ROOM__$$"), [value], lexer.getLocation());
-		} else if (peeked == GMLspeakToken.KEYBOARD_STRING_) {
-			lexer.next();
-			if (lexer.peek() != CatspeakToken.ASSIGN)  {
-				return ir.createCall(ir.createGet("$$__KEYBOARD_STRING__$$"), [], lexer.getLocation());	
-			}
-			lexer.next();
-			var value = __parseExpression();
-			return ir.createCall(ir.createGet("$$__KEYBOARD_STRING__$$"), [value], lexer.getLocation());
-		}else if (peeked == GMLspeakToken.SWITCH) {
+        } else if (peeked == GMLspeakToken.SWITCH) {
 			lexer.next();
             var value = __parseExpression();
 			var conditions = [];
-			lexer.next();
-			while (__isNot(CatspeakToken.BRACE_RIGHT)) {
-				if (__isNot(GMLspeakToken.CASE)) {
-					__ex("expected opening 'case' after 'switch' keyword");	
-				}
-				// Skip over the word case
-				lexer.next();
-				ir.pushBlock();
-				while(__isNot(GMLspeakToken.CASE)) {
-					__parseStatement();
-				}
-				var result = ir.popBlock();
-				array_push(conditions, [value, result]);
-				lexer.next();
-				lexer.peek();
-				
-			}
-            //var conditions = __parseMatchArms();
+            var conditions = __parseMatchArms();
             return ir.createMatch(value, conditions, lexer.getLocation());
         } else if (peeked == CatspeakToken.FUN) {
             lexer.next();
@@ -389,7 +351,19 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 var lhs = result;
                 var rhs = __parseOpPipe();
                 result = ir.createBinary(CatspeakOperator.XOR, lhs, rhs, lexer.getLocation());
-            } else {
+            } else if (peeked == GMLspeakToken.NULLISH) {
+				lexer.next();
+				var condition = ir.createCall(ir.createGet("$$__IS_NOT_NULLISH__$$"), [result], lexer.getLocation());
+				var rhs = __parseExpression();
+				return ir.createIf(condition, ir.createValue(undefined), rhs, lexer.getLocation());
+			} else if (peeked == GMLspeakToken.CONDITIONAL_OPERATOR) {
+				lexer.next();
+				var lhs = __parseExpression();
+				lexer.next();
+				var rhs = __parseExpression();
+				var condition = result;
+				return ir.createIf(condition, lhs, rhs, lexer.getLocation());
+			} else {
                 return result;
             }
         }
@@ -572,7 +546,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         } else if (peeked == CatspeakToken.COLON) {
             // `:property` syntax
             lexer.next();
-            return ir.createProperty(__parseTerminal(), lexer.getLocation());
+            return __parseExpression();
         } else {
             return __parseIndex();
         }
@@ -582,22 +556,39 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     ///
     /// @return {Array}
     static __parseMatchArms = function () {
-        if (lexer.next() != CatspeakToken.BRACE_LEFT) {
-            __ex("expected opening '{' before 'match' arms");
+		if (lexer.next() != CatspeakToken.BRACE_LEFT) {
+			__ex("expected opening '{' before 'match' arms");
+		}
+		var conditions = [];
+		while (__isNot(CatspeakToken.BRACE_RIGHT)) {
+			var value;
+			if (__isNot(GMLspeakToken.CASE)) {
+				__ex("expected 'case' after 'switch' keyword");	
+			}
+			// Skip over the word case
+			var prefix = lexer.next();
+			if (prefix == CatspeakToken.ELSE) {
+				value = undefined;	
+			} else {
+				value =	__parseExpression();
+			}
+			ir.pushBlock();
+			while(__isNot(GMLspeakToken.CASE) && __isNot(CatspeakToken.BRACE_RIGHT)) {
+				if (lexer.peek() == CatspeakToken.BREAK) {
+					lexer.next();
+					if (lexer.peek() == CatspeakToken.SEMICOLON) {
+						lexer.next();	
+					}
+					break;
+				}
+				__parseStatement();
+			}
+			var result = ir.popBlock();
+			array_push(conditions, [value, result]);
+		}
+        if (lexer.next() != CatspeakToken.BRACE_RIGHT) {
+            __ex("expected closing '}' after 'switch'");
         }
-        var conditions = [];
-		var endOfSwitch = false;
-        while (__isNot(CatspeakToken.BRACE_RIGHT) && !endOfSwitch) {
-            var value;
-            var prefix = lexer.next();
-            ir.pushBlock();
-            endOfSwitch = __parseStatementsColon("case");
-            var result = ir.popBlock();
-            array_push(conditions, [value, result]);
-        }
-        //if (lexer.next() != CatspeakToken.BRACE_RIGHT) {
-        //    __ex("expected closing '}' after 'match' arm");
-        //}
         return conditions;
     }
 

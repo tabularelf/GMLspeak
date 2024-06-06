@@ -45,6 +45,8 @@ gmlspeak.interface.exposeFunction(
 	variable_struct_remove
 );
 
+gmlspeak.interface.exposeAsset("Room2");
+
 Catspeak.interface.exposeFunction("print", show_debug_message);
 
 codeCatspeak = @'
@@ -155,25 +157,41 @@ do {
 show_debug_message("Number normal: result: " + string(num));
 show_debug_message("do/until Normal: " + string((get_timer() - _t) / 1000));	
 
-//show_debug_message("Switch/case");
+show_debug_message("Switch/case");
+var _code = @'
+var result = 2;
+switch(result) {
+	case 0: return "gday!";
+	case 1: return "hello";
+	case 2: return "hi";
+}
+
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program(self)));
+
+//show_debug_message("Room switch test");
 //var _code = @'
-//switch(2) {
-//	case 0: return 1;
-//	case 1: return 2;
-//	case 2: return 3;
-//}
-//';
+//show_debug_message(room);
+//room = asset_get_index("Room2");';
 //
 //var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 //show_debug_message("Result: " + string(program(self)));
 
-show_debug_message("Room switch test");
+gmlspeak.interface.exposeFunction("irandom", irandom);
+show_debug_message("Nullish test");
 var _code = @'
-show_debug_message(room);
-room = asset_get_index("Room2");';
+var foo = irandom(3);
+var bar = foo <= 1 ? true : "nice";
+show_debug_message(bar);';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
-show_debug_message("Result: " + string(program(self)));
+repeat(10) {
+	program();	
+}
+
+//programKeyboard = gmlspeak.compileGML(gmlspeak.parseString(_code));
 
 drawProgram = gmlspeak.compileGML(gmlspeak.parseString(@'
 draw_self();

@@ -67,7 +67,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"*/",				GMLspeakToken.COMMENT_LONG_END,
 		"$",				GMLspeakToken.DOLLAR_SIGN,
 		"with",				GMLspeakToken.WITH,
-		"room",				GMLspeakToken.ROOM_
+		"??",				GMLspeakToken.NULLISH,
+		"?",				GMLspeakToken.CONDITIONAL_OPERATOR,
 	);
 	
 	interface.exposeDynamicConstant(
@@ -79,6 +80,10 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			static _scopes = __gmlspeak_scopes();
 			return _scopes.other_;
 		},
+		"$$__KEYBOARD_STRING_GETTER__$$", 
+		function() {
+			return keyboard_string;	
+		}
 	);
 	
 	interface.exposeFunction( 
@@ -88,21 +93,9 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		gmlspeak_push_scope,
 		"$$__SCOPE_POP__$$",
 		gmlspeak_pop_scope,
-		"$$__ROOM__$$",
-		function(_value = undefined) {
-			if (_value == undefined) {
-				return room;
-			} 
-			
-			room = _value;
-		},
-		"$$__KEYBOARD_STRING__$$",
-		function(_value = undefined) {
-			if (_value == undefined) {
-				return keyboard_string;
-			}
-			
-			keyboard_string = _value;
+		"$$__IS_NOT_NULLISH__$$", 
+		function(value) {
+			return (value != undefined) && (value != pointer_null);	
 		}
 	);
 	#endregion
@@ -165,7 +158,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"keyboard_key", function() {return keyboard_key;},
 		"keyboard_lastkey", function() {return keyboard_lastkey;},
 		"keyboard_lastchar", function() {return keyboard_lastchar;},
-		//"keyboard_string", function() {return keyboard_string;},
+		"keyboard_string", function() {return keyboard_string;},
 		
 	);
 	
@@ -592,9 +585,9 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"room_last", function() {return room_last;},
 	);
 	
-	//interface.exposeDynamicConstant( 
-	//	"room", function() {return room;},
-	//);
+	interface.exposeDynamicConstant( 
+		"room", function() {return room;},
+	);
 	#endregion
 	
 	#region Tiles
