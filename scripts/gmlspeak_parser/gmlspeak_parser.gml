@@ -632,10 +632,10 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 // accessor syntax
                 lexer.next();
                 var collection = result;
-                var key = __parseExpression();
                 if (lexer.next() != CatspeakToken.BOX_RIGHT) {
                     __ex("expected closing ']' after accessor expression");
                 }
+				var key = __parseExpression();
 				if (peeked == CatspeakToken.BOX_LEFT) {
 					result = ir.createAccessor(collection, key, lexer.getLocation());
 				} else {
