@@ -11,6 +11,7 @@
 - do/until loops
 - automatic methodizing
 - Switch/case (as oppose to match/case)
+- Nullish coalescing operator `valueA ?? valueB` and tenary operator `value == otherValue ? valueA : valueB` support
 
 # To be added
 - with support for objects.
