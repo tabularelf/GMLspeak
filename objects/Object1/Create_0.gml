@@ -163,7 +163,8 @@ var result = 2;
 switch(result) {
 	case 0: return "gday!";
 	case 1: return "hello";
-	case 2: return "hi";
+	case 2: return "foo";
+	default: return "hi";
 }
 
 ';

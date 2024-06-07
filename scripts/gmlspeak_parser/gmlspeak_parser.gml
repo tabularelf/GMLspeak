@@ -562,18 +562,18 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 		var conditions = [];
 		while (__isNot(CatspeakToken.BRACE_RIGHT)) {
 			var value;
-			if (__isNot(GMLspeakToken.CASE)) {
-				__ex("expected 'case' after 'switch' keyword");	
+			if (__isNot(GMLspeakToken.CASE) && __isNot(GMLspeakToken.DEFAULT)) {
+				__ex("expected '"+lexer.getLexeme()+"' after 'switch' keyword");	
 			}
 			// Skip over the word case
 			var prefix = lexer.next();
-			if (prefix == CatspeakToken.ELSE) {
+			if (prefix == GMLspeakToken.DEFAULT) {
 				value = undefined;	
 			} else {
 				value =	__parseExpression();
 			}
 			ir.pushBlock();
-			while(__isNot(GMLspeakToken.CASE) && __isNot(CatspeakToken.BRACE_RIGHT)) {
+			while((__isNot(GMLspeakToken.CASE) && __isNot(GMLspeakToken.DEFAULT)) && __isNot(CatspeakToken.BRACE_RIGHT)) {
 				if (lexer.peek() == CatspeakToken.BREAK) {
 					lexer.next();
 					if (lexer.peek() == CatspeakToken.SEMICOLON) {
