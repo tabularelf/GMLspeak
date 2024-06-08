@@ -1022,23 +1022,23 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	} catch(_) {
 		__gmlspeak_log("New Audio Effects unavailable! Skipping...");
 	}
-		var _AudioEffectTypeStruct = {};
+	
 	try {
-		_AudioEffectTypeStruct.Bitcrusher = AudioEffectType.Bitcrusher;
-		_AudioEffectTypeStruct.Delay = AudioEffectType.Delay;
-		_AudioEffectTypeStruct.Gain = AudioEffectType.Gain;
-		_AudioEffectTypeStruct.HPF2 = AudioEffectType.HPF2;
-		_AudioEffectTypeStruct.LPF2 = AudioEffectType.LPF2;
-		_AudioEffectTypeStruct.Reverb1 = AudioEffectType.Reverb1;
-		_AudioEffectTypeStruct.EQ = AudioEffectType.EQ;
-		_AudioEffectTypeStruct.LoShelf = AudioEffectType.LoShelf;
-		_AudioEffectTypeStruct.HiShelf = AudioEffectType.HiShelf;
-		_AudioEffectTypeStruct.PeakEQ = AudioEffectType.PeakEQ;
-		_AudioEffectTypeStruct.Tremolo = AudioEffectType.Tremolo;
-		_AudioEffectTypeStruct.Compressor = AudioEffectType.Compressor;
+		__AudioEffectTypeStruct.Bitcrusher = AudioEffectType.Bitcrusher;
+		__AudioEffectTypeStruct.Delay = AudioEffectType.Delay;
+		__AudioEffectTypeStruct.Gain = AudioEffectType.Gain;
+		__AudioEffectTypeStruct.HPF2 = AudioEffectType.HPF2;
+		__AudioEffectTypeStruct.LPF2 = AudioEffectType.LPF2;
+		__AudioEffectTypeStruct.Reverb1 = AudioEffectType.Reverb1;
+		__AudioEffectTypeStruct.EQ = AudioEffectType.EQ;
+		__AudioEffectTypeStruct.LoShelf = AudioEffectType.LoShelf;
+		__AudioEffectTypeStruct.HiShelf = AudioEffectType.HiShelf;
+		__AudioEffectTypeStruct.PeakEQ = AudioEffectType.PeakEQ;
+		__AudioEffectTypeStruct.Tremolo = AudioEffectType.Tremolo;
+		__AudioEffectTypeStruct.Compressor = AudioEffectType.Compressor;
 		
 		interface.exposeConstant( 
-			"AudioEffectType", _AudioEffectTypeStruct,
+			"AudioEffectType", __AudioEffectTypeStruct,
 			"audio_bus_main", audio_bus_main
 		);
 	} catch(_) {
