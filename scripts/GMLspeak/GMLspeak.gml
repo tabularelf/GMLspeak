@@ -1010,11 +1010,11 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	static __AudioEffectTypeStruct = {};	
 	static __AudioLFOType = {};
 	try {
-		__AudioLFOType.InvSawtooth = AudioEffectType.InvSawtooth;
-		__AudioLFOType.Sawtooth = AudioEffectType.Sawtooth;
-		__AudioLFOType.Sine = AudioEffectType.Sine;
-		__AudioLFOType.Square = AudioEffectType.Square;
-		__AudioLFOType.Triangle = AudioEffectType.Triangle;
+		__AudioLFOType.InvSawtooth = AudioLFOType.InvSawtooth;
+		__AudioLFOType.Sawtooth = AudioLFOType.Sawtooth;
+		__AudioLFOType.Sine = AudioLFOType.Sine;
+		__AudioLFOType.Square = AudioLFOType.Square;
+		__AudioLFOType.Triangle = AudioLFOType.Triangle;
 		
 		interface.exposeConstant( 
 			"AudioLFOType", __AudioLFOType
@@ -1022,7 +1022,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	} catch(_) {
 		__gmlspeak_log("New Audio Effects unavailable! Skipping...");
 	}
-	
+		var _AudioEffectTypeStruct = {};
 	try {
 		_AudioEffectTypeStruct.Bitcrusher = AudioEffectType.Bitcrusher;
 		_AudioEffectTypeStruct.Delay = AudioEffectType.Delay;
