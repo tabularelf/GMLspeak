@@ -5,7 +5,7 @@
   "isDnD": false,
   "isCompatibility": false,
   "parent": {
-    "name": "GMLspeak",
-    "path": "folders/GMLspeak.yy",
+    "name": "Internal",
+    "path": "folders/GMLspeak/Internal.yy",
   },
 }

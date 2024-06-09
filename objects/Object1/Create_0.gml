@@ -245,6 +245,21 @@ return value';
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message("Result: " + string(program()));
 
+rawr = "Hello world!";
+
+show_debug_message("Struct validation test");
+var _code = @'
+var struct = {
+	foo: "bar",
+	bar: self.rawr
+};
+
+return struct';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+struct = program(self);
+show_debug_message(json_stringify(struct));
+
 //programKeyboard = gmlspeak.compileGML(gmlspeak.parseString(_code));
 
 drawProgram = gmlspeak.compileGML(gmlspeak.parseString(@'
