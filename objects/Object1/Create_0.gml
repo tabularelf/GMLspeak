@@ -232,6 +232,19 @@ return foo';
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message("Result: " + string(program()));
 
+show_debug_message("Valid GML test");
+var value = false;
+value = value == false ? true && undefined : false;
+show_debug_message(value);
+
+var _code = @'
+var value = false;
+value = false == false ? true : false;
+return value';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program()));
+
 //programKeyboard = gmlspeak.compileGML(gmlspeak.parseString(_code));
 
 drawProgram = gmlspeak.compileGML(gmlspeak.parseString(@'
