@@ -186,6 +186,7 @@ enum GMLspeakToken {
 	DOLLAR_SIGN,
 	WITH,
 	NULLISH,
+	NULLISH_ASSIGN,
 	CONDITIONAL_OPERATOR,
     /// @ignore
     __SIZE__

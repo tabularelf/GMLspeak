@@ -187,7 +187,7 @@ show_debug_message("Result: " + string(testSwitch(4)));
 //show_debug_message("Result: " + string(program(self)));
 
 gmlspeak.interface.exposeFunction("irandom", irandom);
-show_debug_message("Nullish test");
+show_debug_message("Tenary operator test");
 var _code = @'
 var foo = irandom(3);
 var bar = foo <= 1 ? true : "nice";
@@ -197,6 +197,32 @@ var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 repeat(10) {
 	program();	
 }
+
+show_debug_message("Nullish assign test");
+var _code = @'
+var foo = undefined;
+foo ??= true
+return foo';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program()));
+
+var _code = @'
+var foo = false;
+foo ??= true
+return foo';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program()));
+
+show_debug_message("Nullish test");
+var _code = @'
+var foo = undefined;
+foo = undefined ?? "bar";
+return foo';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program()));
 
 //programKeyboard = gmlspeak.compileGML(gmlspeak.parseString(_code));
 

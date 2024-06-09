@@ -325,7 +325,17 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 __parseExpression(),
                 lexer.getLocation()
             );
-        }
+        } else if (peeked == GMLspeakToken.NULLISH_ASSIGN) {
+			lexer.next();
+			var rhs = ir.createAssign(
+                __catspeak_operator_assign_from_token(CatspeakToken.ASSIGN),
+                lhs,
+                __parseExpression(),
+                lexer.getLocation()
+            );
+			var condition = ir.createCall(ir.createGet("$$__IS_NOT_NULLISH__$$"), [lhs], lexer.getLocation());
+			lhs = ir.createIf(condition, ir.createValue(undefined), rhs, lexer.getLocation());
+		}
         return lhs;
     };
 

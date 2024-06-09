@@ -68,6 +68,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"$",				GMLspeakToken.DOLLAR_SIGN,
 		"with",				GMLspeakToken.WITH,
 		"??",				GMLspeakToken.NULLISH,
+		"??=",				GMLspeakToken.NULLISH_ASSIGN,
 		"?",				GMLspeakToken.CONDITIONAL_OPERATOR,
 	);
 	
