@@ -218,7 +218,15 @@ show_debug_message("Result: " + string(program()));
 show_debug_message("Nullish test");
 var _code = @'
 var foo = undefined;
-foo = undefined ?? "bar";
+foo = foo ?? "bar";
+return foo';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message("Result: " + string(program()));
+
+var _code = @'
+var foo = "foo";
+foo = foo ?? "bar";
 return foo';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));

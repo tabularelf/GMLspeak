@@ -365,7 +365,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 				lexer.next();
 				var condition = ir.createCall(ir.createGet("$$__IS_NOT_NULLISH__$$"), [result], lexer.getLocation());
 				var rhs = __parseExpression();
-				return ir.createIf(condition, ir.createValue(undefined), rhs, lexer.getLocation());
+				return ir.createIf(condition, result, rhs, lexer.getLocation());
 			} else if (peeked == GMLspeakToken.CONDITIONAL_OPERATOR) {
 				lexer.next();
 				var lhs = __parseExpression();
