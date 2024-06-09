@@ -13,7 +13,7 @@ gmlspeak.interface.exposeFunction("get_timer", get_timer);
 gmlspeak.interface.exposeFunction("show_debug_message", show_debug_message,
 	"draw_self", 
 	function() {
-		with(gmlspeak_self()) return draw_self();
+		with(gmlspeak_self()) draw_self();
 	});
 catspeak.interface.exposeFunction("string", string);
 catspeak.interface.exposeFunction("show_debug_message", show_debug_message);
@@ -161,9 +161,9 @@ show_debug_message("Switch/case");
 var _code = @'
 testSwitch = function(result) {
 	switch(result) {
-		case 0: return "gday!";
-		case 1: return "hello";
-		case 2:
+		case 0: show_debug_message("AAA");
+		case 1: show_debug_message("BBB");
+		case 2: show_debug_message("Do I show?");
 		case 3: return "switch/case: foo";
 		default: return "hi";
 	}

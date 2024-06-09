@@ -561,6 +561,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 		}
 		var conditions = [];
 		var statements = undefined;
+		var breakDetected = false;
+		var breakCases = undefined;
+		var breakDetectedPushed = false;
 		while (__isNot(CatspeakToken.BRACE_RIGHT)) {
 			statements = undefined;
 			var value;
@@ -589,8 +592,17 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			}
 			ir.pushBlock();
 			while((__isNot(GMLspeakToken.CASE) && __isNot(GMLspeakToken.DEFAULT)) && __isNot(CatspeakToken.BRACE_RIGHT)) {
+				breakDetectedPushed = false;
 				if (lexer.peek() == CatspeakToken.BREAK) {
+					breakDetected = true;
 					lexer.next();
+					if (lexer.peek() == CatspeakToken.SEMICOLON) {
+						lexer.next();	
+					}
+					break;
+				} else if (lexer.peek() == CatspeakToken.RETURN) {
+					breakDetected = true;
+					ir.createStatement(__parseExpression());
 					if (lexer.peek() == CatspeakToken.SEMICOLON) {
 						lexer.next();	
 					}
@@ -599,12 +611,34 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 				__parseStatement();
 			}
 			var result = ir.popBlock();
+			if (!breakDetected) {
+				breakCases ??= [];	
+				array_push(breakCases, [value, result]);
+			}
+			
 			if (statements != undefined) {
 				for(var i = 0, len = array_length(statements); i < len; ++i) {
 					array_push(conditions, [statements[i], result]);
 				}
 			} else {
-				array_push(conditions, [value, result]);	
+				if (breakDetected) {
+					breakDetected = false;
+					if (breakCases != undefined) {
+						breakDetectedPushed = true;
+						var newResult;
+						for(var i = 0, len = array_length(breakCases); i < len; ++i) {
+							ir.pushBlock();
+							for(var j = i; j < len; ++j) {
+								ir.createStatement(breakCases[j][1]);
+							}
+							ir.createStatement(result);
+							newResult = ir.popBlock();
+							array_push(conditions, [breakCases[i][0], newResult]);
+						}	
+						breakCases = undefined;
+					}
+					array_push(conditions, [value, result]);
+				}	
 			}
 		}
         if (lexer.next() != CatspeakToken.BRACE_RIGHT) {
