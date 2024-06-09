@@ -159,18 +159,24 @@ show_debug_message("do/until Normal: " + string((get_timer() - _t) / 1000));
 
 show_debug_message("Switch/case");
 var _code = @'
-var result = 2;
-switch(result) {
-	case 0: return "gday!";
-	case 1: return "hello";
-	case 2: return "foo";
-	default: return "hi";
+testSwitch = function(result) {
+	switch(result) {
+		case 0: return "gday!";
+		case 1: return "hello";
+		case 2:
+		case 3: return "switch/case: foo";
+		default: return "hi";
+	}
 }
-
 ';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
-show_debug_message("Result: " + string(program(self)));
+program(self);
+show_debug_message("Result: " + string(testSwitch(0)));
+show_debug_message("Result: " + string(testSwitch(1)));
+show_debug_message("Result: " + string(testSwitch(2)));
+show_debug_message("Result: " + string(testSwitch(3)));
+show_debug_message("Result: " + string(testSwitch(4)));
 
 //show_debug_message("Room switch test");
 //var _code = @'

@@ -560,7 +560,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			__ex("expected opening '{' before 'match' arms");
 		}
 		var conditions = [];
+		var statements = undefined;
 		while (__isNot(CatspeakToken.BRACE_RIGHT)) {
+			statements = undefined;
 			var value;
 			if (__isNot(GMLspeakToken.CASE) && __isNot(GMLspeakToken.DEFAULT)) {
 				__ex("expected '"+lexer.getLexeme()+"' after 'switch' keyword");	
@@ -571,6 +573,19 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 				value = undefined;	
 			} else {
 				value =	__parseExpression();
+				lexer.next();
+				// Multistack case
+				if (lexer.peek() == GMLspeakToken.CASE) {
+					statements = [value];
+					while(lexer.peek() == GMLspeakToken.CASE) {
+						if (lexer.peek() == GMLspeakToken.CASE) {
+							lexer.next();	
+						}
+							
+						array_push(statements, __parseExpression());
+						lexer.next();
+					}
+				}
 			}
 			ir.pushBlock();
 			while((__isNot(GMLspeakToken.CASE) && __isNot(GMLspeakToken.DEFAULT)) && __isNot(CatspeakToken.BRACE_RIGHT)) {
@@ -584,7 +599,13 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 				__parseStatement();
 			}
 			var result = ir.popBlock();
-			array_push(conditions, [value, result]);
+			if (statements != undefined) {
+				for(var i = 0, len = array_length(statements); i < len; ++i) {
+					array_push(conditions, [statements[i], result]);
+				}
+			} else {
+				array_push(conditions, [value, result]);	
+			}
 		}
         if (lexer.next() != CatspeakToken.BRACE_RIGHT) {
             __ex("expected closing '}' after 'switch'");
