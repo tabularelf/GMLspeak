@@ -147,7 +147,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"current_day", function() {return current_day;},
 		"current_hour", function() {return current_hour;},
 		"current_minute", function() {return current_minute;},
-		"current_second", function() {return current_second;}
+		"current_second", function() {return current_second;},
+		"instance_count", function() {return instance_count;},
 	);
 	#endregion
 	
@@ -588,6 +589,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	
 	interface.exposeDynamicConstant( 
 		"room", function() {return room;},
+		"room_width", function() {return room_width;},
+		"room_height", function() {return room_width;},
 	);
 	#endregion
 	
