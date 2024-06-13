@@ -842,7 +842,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 		if (term.type == CatspeakTerm.GLOBAL) && (!variable_struct_exists(interface.database, term.name)) {
 			term.type = CatspeakTerm.VALUE;
 			term.value = term.name;
-			struct_remove(term, "name");
+			variable_struct_remove(term, "name");
 			return ir.createAccessor(ir.createGet("self"), term, term.dbg);
 		}	
 		return term;
