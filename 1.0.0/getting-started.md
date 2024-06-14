@@ -3,7 +3,7 @@
 ## Installing
 1. Download GMLspeak's .yymps from [releases!](https://github.com/tabularelf/GMLspeak/releases)
 2. With your GameMaker Project, drag the .yymps (or at the top go to Tools -> Import Local Package)
-3. Press "Add All" and press "Import".
+3. Press "Add All" and press "Import". (Unles you are using a different version of Catspeak that GMLspeak provides for you. As of writing, it uses Catspeak v3.0.2)
 
 ## Updating to a new version
 
