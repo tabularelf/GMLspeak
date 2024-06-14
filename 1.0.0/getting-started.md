@@ -88,7 +88,7 @@ Now that we have our code, we can now parse this.
 ```gml
 var ast = global.GMLspeak.parseString(codeString);
 ```
-The parser functions return a struct that represents an abstract syntax tree. You can save this struct to a file at any time for caching, uploading over the internet, etc. and be loaded back in.
+The parser functions return a struct that represents an abstract syntax tree. Abstract syntax trees (short for AST) is effectively a structure of how the compiled program is executed. You can save this struct to a file at any time for caching, uploading over the internet, etc. and be loaded back in.
 This same struct is also used to compile all GMLspeak programs (and by extension, Catspeak). We can compile our code using `environment.compileGML(ast)`
 ```gml
 program = global.gmlSpeak.compileGML(ast);
