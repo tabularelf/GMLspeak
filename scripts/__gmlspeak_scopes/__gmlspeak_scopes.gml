@@ -9,16 +9,3 @@ function __gmlspeak_scopes() {
 	
 	return _scopes;
 }
-
-
-/// @return {Struct}
-function gmlspeak_self() {
-	static _scopes = __gmlspeak_scopes();
-	return _scopes.self_;
-}
-
-/// @return {Struct}
-function gmlspeak_other() {
-	static _scopes = __gmlspeak_scopes();
-	return _scopes.other_;
-}
