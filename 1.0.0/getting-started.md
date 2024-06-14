@@ -53,7 +53,7 @@ GMLspeak supports a majority of GML-like syntax and behaviours. The following yo
 - Custom method handler for Catspeak/GMLspeak interop. (referred to as `method` in GMLspeak)
 - Partial `with(scope)` support. (Does not cover `all` and object indexes)
 - Automatic methodizing of functions on creation.
-- Comment blocks `/* Secter little message */`
+- Comment blocks `/* Secret little message */`
 - Almost every single GML constant
 - Proper `self`/`other` scope
 - Support for `global` variables (which includes a custom `global` struct to separate from native GM global)
