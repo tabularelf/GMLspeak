@@ -1,91 +1,55 @@
-# General
+### `gmlspeak_method(scope, function)`
 
-### `VramDoctorGetTexturePageSize()`
+Returns: `method`
 
-Returns: `Real`
+|Name|Datatype|Purpose|
+|---|---|---|
+|`scope`|`Instance or struct`|Scope you wish to bind|
+|`function`|`function or method`|Function or method you wish to bind with|
+
+Returns a method that respects GMLspeak methods.
+
+### `is_gmlspeak(value)`
+
+Returns: `bool`
+
+|Name|Datatype|Purpose|
+|---|---|---|
+|`value`|`Any`|Value to check if it's a valid GMLspeak program/function or not|
+
+Returns whether it is a valid GMLspeak program/function/method, or not.
+
+### `gmlspeak_self()`
+
+Returns: `Current self`
 
 |Name|Datatype|Purpose|
 |---|---|---|
 |`N/A`|||
 
-Returns the current total texture pages (sprites, fonts, tilesets) size in bytes.
+Returns the current self being used for GMLspeak. In cases where the current self needs to be referred to.
 
-!> Texture pages are calculated as `width * height * 4`, where 4 is RGBA (8 bytes per color value)
+### `gmlspeak_other()`
 
-### `VramDoctorGetSurfaceTextureSize()`
-
-Returns: `Real`
+Returns: `Current other`
 
 |Name|Datatype|Purpose|
 |---|---|---|
 |`N/A`|||
 
-Returns the current total surfaces size in bytes.
+Returns the current other being used for GMLspeak. In cases where the current other needs to be referred to.
 
-!> Surfaces are calculated as `width * height * surfaceFormat`, where surfaceFormat depends on the format used. See the graph below for their byte size.
-
-|Surface Format Type|Size (bytes)|Notes|
-|---|---|---|
-|`surface_rgbaunorm`|4|The default for all surfaces, when no format is specified.|
-|`surface_r8unorm`|1|||
-|`surface_rg8unorm`|2||
-|`surface_rgba4unorm`|2||
-|`surface_rgba16float`|8||
-|`surface_r16float`|2||
-|`surface_rgba32float`|16||
-|`surface_r32float`|4||
-
-### `VramDoctorGetTextureSize()`
-
-Returns: `Real`
-
-|Name|Datatype|Purpose|
-|---|---|---|
-|`N/A`|||
-
-Returns the current total texture size for all surfaces and texture pages size in bytes.
-
-### `VramDoctorGetVBOSize()`
-
-Returns: `Real`
-
-|Name|Datatype|Purpose|
-|---|---|---|
-|`N/A`|||
-
-Returns the current total frozen vertex buffers size in bytes.
-
-### `VramDoctorGetTotalSize()`
-
-Returns: `Real`
-
-|Name|Datatype|Purpose|
-|---|---|---|
-|`N/A`|||
-
-Returns the total size of everything. Effectively the same as calling `VramDoctorGetTexturePageSize()`, `VramDoctorGetSurfaceTextureSize()`, `VramDoctorGetTextureSize()` and `VramDoctorGetVBOSize()`.
-
-### `VramDoctorSetAutoTick(bool)`
+### `gmlspeak_push_scope(scope)`
 
 Returns: `N/A`
 
 |Name|Datatype|Purpose|
 |---|---|---|
-|`value`|`Boolean`|The state you wish to set.|
+|`scope`|`Instance or struct`|Scope you wish to push|
 
-Sets whether Vram Doctor should automatically tick every frame or not. Turning this off requires calling `VramDoctorUpdate()` manually. The default is `true`.
+Pushes the current self in GMLspeak to GMLspeak `other` and sets the current new self scope.
 
-### `VramDoctorSetSeconds(seconds)`
-
-Returns: `N/A`
-
-|Name|Datatype|Purpose|
-|---|---|---|
-|`seconds`|`Real`|The seconds you wish to set.|
-
-Sets how many seconds between each tick should Vram Doctor wait before recalculating sizes. The default is `0.01` seconds.
-
-### `VramDoctorUpdate()`
+### `gmlspeak_pop_scope()`
 
 Returns: `N/A`
 
@@ -93,6 +57,4 @@ Returns: `N/A`
 |---|---|---|
 |`N/A`|||
 
-Forces Vram Doctor to tick automatically.
-
-!> You can only use this if Vram Doctor auto tick is set to false. This will throw an exception otherwise.
+Reverts back to the previous scopes for self and other for GMLspeak.
