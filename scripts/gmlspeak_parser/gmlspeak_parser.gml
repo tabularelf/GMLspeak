@@ -182,7 +182,6 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             return ir.createIf(condition, ifTrue, ifFalse, lexer.getLocation());
         } else if (peeked == CatspeakToken.WHILE) {
             lexer.next();
-			__parseStatement();
             var condition = __parseCondition();
             ir.pushBlock();
             __parseStatements("while");
