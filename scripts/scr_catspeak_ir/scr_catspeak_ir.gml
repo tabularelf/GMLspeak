@@ -249,10 +249,59 @@ function CatspeakIRBuilder() constructor {
         });
     };
 
-    /// Emits the instruction for a while loop.
+    /// Emits the instruction for a generic loop. GML style `while`,
+    /// `for`, and `do` loops can be implemented in terms of this function.
+    ///
+    /// @param {Struct} preCondition
+    ///   The term which evaluates to the condition of a `while` loop.
+    ///   Can be `undefined`.
+    ///
+    /// @param {Struct} postCondition
+    ///   The term which evaluates to the condition of a `do` loop.
+    ///   Can be `undefined`.
+    ///
+    /// @param {Struct} step
+    ///   The term which evaluates to the step of a `for` loop.
+    ///   Can be `undefined`.
+    ///
+    /// @param {Struct} body
+    ///   The body of the while loop.
+    ///
+    /// @param {Real} [location]
+    ///   The source location of this value term.
+    ///
+    /// @return {Struct}
+    static createLoop = function (
+        preCondition, postCondition, step, body, location=undefined
+    ) {
+        if (CATSPEAK_DEBUG_MODE) {
+            if (preCondition != undefined) {
+                __catspeak_check_arg_struct("preCondition", preCondition);
+            }
+            if (postCondition != undefined) {
+                __catspeak_check_arg_struct("postCondition", postCondition);
+            }
+            if (step != undefined) {
+                __catspeak_check_arg_struct("step", step);
+            }
+            __catspeak_check_arg_struct("body", body);
+        }
+        // __createTerm() will do argument validation
+        return __createTerm(CatspeakTerm.LOOP, location, {
+            preCondition : preCondition,
+            postCondition : postCondition,
+            step : step,
+            body : body,
+        });
+    };
+
+    /// Emits the instruction for a GML style `while` loop.
+    ///
+    /// @deprecated
+    ///   Use `createLoop` instead.
     ///
     /// @param {Struct} condition
-    ///   The term which evaluates to the condition of the while loop.
+    ///   The term which evaluates to the condition of the `while` loop.
     ///
     /// @param {Struct} body
     ///   The body of the while loop.
@@ -262,42 +311,29 @@ function CatspeakIRBuilder() constructor {
     ///
     /// @return {Struct}
     static createWhile = function (condition, body, location=undefined) {
-        if (CATSPEAK_DEBUG_MODE) {
-            __catspeak_check_arg_struct("condition", condition,
-                "type", is_numeric
-            );
-            __catspeak_check_arg_struct("body", body);
-        }
-        if (condition.type == CatspeakTerm.VALUE && !__getValue(condition)) {
-            return createValue(undefined, condition.dbg);
-        }
-        // __createTerm() will do argument validation
-        return __createTerm(CatspeakTerm.WHILE, location, {
-            condition : condition,
-            body : body,
-        });
+        return createLoop(condition, undefined, undefined, body, location);
     };
 
-    /// Emits the instruction for a context managed `use` block.
+    /// Emits the instruction for a GML style `with` loop.
     ///
-    /// @param {Struct} condition
-    ///   The term which evaluates to the condition of the context block.
+    /// @param {Struct} scope
+    ///   The term which evaluates to the self scope of the `with` loop.
     ///
     /// @param {Struct} body
-    ///   The body of the block.
+    ///   The body of the while loop.
     ///
     /// @param {Real} [location]
     ///   The source location of this value term.
     ///
     /// @return {Struct}
-    static createUse = function (condition, body, location=undefined) {
+    static createWith = function (scope, body, location=undefined) {
         if (CATSPEAK_DEBUG_MODE) {
-            __catspeak_check_arg_struct("condition", condition);
+            __catspeak_check_arg_struct("scope", scope);
             __catspeak_check_arg_struct("body", body);
         }
         // __createTerm() will do argument validation
-        return __createTerm(CatspeakTerm.USE, location, {
-            condition : condition,
+        return __createTerm(CatspeakTerm.WITH, location, {
+            scope : scope,
             body : body,
         });
     };
@@ -547,6 +583,20 @@ function CatspeakIRBuilder() constructor {
         // __createTerm() will do argument validation
         return __createTerm(CatspeakTerm.SELF, location, { });
     };
+	
+	/// Creates an instruction for accessing the caller `self`.
+    ///
+    /// @experimental 
+    ///
+    /// @param {Real} [location]
+    ///   The source location of this term.
+    ///
+    /// @return {Struct}
+    static createOther = function (location=undefined) {
+        // __createTerm() will do argument validation
+        return __createTerm(CatspeakTerm.OTHER, location, { });
+    };
+
 
     /// Attempts to assign a right-hand-side value to a left-hand-side target.
     ///
@@ -664,8 +714,38 @@ function CatspeakIRBuilder() constructor {
         });
     };
 
+    /// Reuses a local variable with the supplied name, if one exists in the
+    /// current scope. Otherwise, behaves identically to `allocLocal`.
+    ///
+    /// @param {String} name
+    ///   The name of the local variable to allocate.
+    ///
+    /// @param {Real} [location]
+    ///   The source location of this local variable.
+    ///
+    /// @return {Struct}
+    static allocLocalOrReuse = function (name, location=undefined) {
+        if (CATSPEAK_DEBUG_MODE) {
+            __catspeak_check_arg("name", name, is_string);
+        }
+        var block = currFunctionScope.blocks[| currFunctionScope.blocksTop];
+        var scope = block.locals;
+        if (ds_map_exists(scope, name)) {
+            // __createTerm() will do argument validation
+            return __createTerm(CatspeakTerm.LOCAL, location, {
+                idx : scope[? name],
+            });
+        } else {
+            return allocLocal(name, location);
+        }
+    };
+
     /// Allocates a new named function argument with the supplied name.
     /// Returns a term to get or set the value of this argument.
+    ///
+    /// @warning
+    ///   All parameter names must be allocated before allocating any
+    ///   local variables.
     ///
     /// @param {String} name
     ///   The name of the local variable to allocate.
@@ -898,7 +978,8 @@ enum CatspeakTerm {
     IF,
     AND,
     OR,
-    WHILE,
+    LOOP,
+    WITH,
     MATCH,
     USE,
     RETURN,
@@ -915,6 +996,8 @@ enum CatspeakTerm {
     GLOBAL,
     FUNCTION,
     SELF,
+	OTHER,
+	PARAMS,
     /// @ignore
     __SIZE__
 }

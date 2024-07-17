@@ -1,51 +1,86 @@
 function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
-	self.sharedGlobalStruct = undefined;
+	enableSharedGlobal(true);
+	
 	//self.codegenType = GMLspeakGMLCompiler;
-	useGMLGlobal(false);
-	
-	static __parentCompile = compile;
-	
-	static compile = function(ir) {
-		var result = __parentCompile(ir);
-		
-		return method({program:  result, args: [], global_: sharedGlobalStruct}, __gmlspeak_program__);
-	}
-	
-	static compileGML = compile;
-	
-	static useGMLGlobal = function(value) {
-		if (value) {
-			sharedGlobalStruct =  (method(global, function() {return self;}))();
-			interface.exposeConstant("global", sharedGlobalStruct);
-		} else {
-			sharedGlobalStruct = sharedGlobal ?? {};
-			interface.exposeConstant("global", sharedGlobalStruct);	
-		}
-	}
+	//useGMLGlobal(false);
+	//
+	//static __parentCompile = compile;
+	//
+	//static compile = function(ir) {
+	//	var result = __parentCompile(ir);
+	//	
+	//	return method({program:  result, args: [], global_: sharedGlobalStruct}, __gmlspeak_program__);
+	//}
+	//
+	//static compileGML = compile;
+	//
+	//static useGMLGlobal = function(value) {
+	//	if (value) {
+	//		sharedGlobalStruct =  (method(global, function() {return self;}))();
+	//		interface.exposeConstant("global", sharedGlobalStruct);
+	//	} else {
+	//		sharedGlobalStruct = sharedGlobal ?? {};
+	//		interface.exposeConstant("global", sharedGlobalStruct);	
+	//	}
+	//}
 	
 	#region Keywords
 	renameKeyword(
-        "//", "div",
-        "--", "//",
         "let", "var",
         "fun", "function",
         "impl", "constructor", // Not implemented
-		"params", "arguments",
+		"params", "arguments", // Not implemented
     );
 	
 	removeKeyword(
 		"|>",
-		"<|",
-		"self"
+		"<|"
 	); 
 	
 	addKeyword(
+	
+		// HOTFIX::Must replace with a better lexer later.
+		";",				CatspeakToken.SEMICOLON,
+		":",				CatspeakToken.COLON,
+		"//",				CatspeakToken.COMMENT,
+		";",				CatspeakToken.SEMICOLON,
+		":",				CatspeakToken.COLON,
+		",",				CatspeakToken.COMMA,
+		".",				CatspeakToken.DOT,
+		"=",				CatspeakToken.ASSIGN,
+		"*=",				CatspeakToken.ASSIGN_MULTIPLY,
+		"/=",				CatspeakToken.ASSIGN_DIVIDE,
+		"-=",				CatspeakToken.ASSIGN_SUBTRACT,
+		"+=",				CatspeakToken.ASSIGN_PLUS,
+		"%",				CatspeakToken.REMAINDER,
+		"*",				CatspeakToken.MULTIPLY,
+		"/",				CatspeakToken.DIVIDE,
+		"div",				CatspeakToken.DIVIDE_INT,
+		"-",				CatspeakToken.SUBTRACT,
+		"+",				CatspeakToken.PLUS,
+		"==",				CatspeakToken.EQUAL,
+		"!=",				CatspeakToken.NOT_EQUAL,
+		">",				CatspeakToken.GREATER,
+		">=",				CatspeakToken.GREATER_EQUAL,
+		"<",				CatspeakToken.LESS,
+		"<=",				CatspeakToken.LESS_EQUAL,
+		"!",				CatspeakToken.NOT,
+		"~",				CatspeakToken.BITWISE_NOT,
+		">>",				CatspeakToken.SHIFT_RIGHT,
+		"<<",				CatspeakToken.SHIFT_LEFT,
+		"&",				CatspeakToken.BITWISE_AND,
+		"^",				CatspeakToken.BITWISE_XOR,
+		"|",				CatspeakToken.BITWISE_OR,
+		"self",				CatspeakToken.SELF,
+		//"other",			GMLspeakToken.OTHER,
+		
 		// Implemented as comments since these kind of act like two separate comments.
 		// What could go wrong? *foreshadows*
 		"#region",			CatspeakToken.COMMENT,
 		"#endregion",		CatspeakToken.COMMENT,
+		"div",				CatspeakToken.DIVIDE_INT,
 	    "&&",				CatspeakToken.AND,
 	    "||",				CatspeakToken.OR,
 		":=",				CatspeakToken.ASSIGN,
@@ -65,7 +100,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"default",			GMLspeakToken.DEFAULT,
 		"/*",				GMLspeakToken.COMMENT_LONG,
 		"*/",				GMLspeakToken.COMMENT_LONG_END,
-		"$",				GMLspeakToken.DOLLAR_SIGN,
 		"with",				GMLspeakToken.WITH,
 		"??",				GMLspeakToken.NULLISH,
 		"??=",				GMLspeakToken.NULLISH_ASSIGN,
@@ -73,13 +107,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	);
 	
 	interface.exposeDynamicConstant(
-		"self", function() {
-			static _scopes = __gmlspeak_scopes();
-			return _scopes.self_;
-		},
 		"other", function() {
-			static _scopes = __gmlspeak_scopes();
-			return _scopes.other_;
+			return global.__catspeakGmlOther ?? sharedGlobal;	
 		},
 		"$$__KEYBOARD_STRING_GETTER__$$", 
 		function() {
@@ -87,9 +116,11 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		}
 	);
 	
+	interface.exposeConstant("global", sharedGlobal);
+	
 	interface.exposeFunction( 
 		"method",
-		__gmlspeak_method__,
+		catspeak_method,
 		"$$__SCOPE_PUSH__$$",
 		gmlspeak_push_scope,
 		"$$__SCOPE_POP__$$",

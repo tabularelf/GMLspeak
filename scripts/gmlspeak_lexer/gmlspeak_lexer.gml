@@ -188,6 +188,7 @@ enum GMLspeakToken {
 	NULLISH,
 	NULLISH_ASSIGN,
 	CONDITIONAL_OPERATOR,
+	OTHER,
     /// @ignore
     __SIZE__
 }

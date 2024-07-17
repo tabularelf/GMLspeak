@@ -5,6 +5,9 @@ show_debug_message((get_timer() - _t) / 1000);
 
 var _t = get_timer();
 gmlspeak = new GMLspeakEnvironment();
+gmlspeak.sharedGlobal = (method(global, function() {
+	return self;
+}))();
 show_debug_message((get_timer() - _t) / 1000);
 
 gmlspeak.interface.exposeFunction("string", string);
@@ -93,10 +96,7 @@ factorial = function (n) {
 
 factorial(1) // result: 1
 factorial(2) // result: 2
-factorial(3) // result: 6
-factorial(4) // result: 24
-factorial(5) // result: 120
-factorial(6) // result: 720';
+';
 
 var programGMLspeak = gmlspeak.compileGML(gmlspeak.parseString(code));
 var programCatspeak = Catspeak.compileGML(Catspeak.parseString(codeCatspeak));
@@ -115,16 +115,16 @@ globals.factorial(5);
 globals.factorial(6);
 show_debug_message("Catspeak Manual factorial: " + string((get_timer() - _t) / 1000));
 var _t = get_timer();
-programGMLspeak(id);
+catspeak_execute_ext(programGMLspeak, id);
 show_debug_message("GMLspeak factorial: " + string((get_timer() - _t) / 1000));
 
 var _t = get_timer();
-factorial(1);
-factorial(2);
-factorial(3);
-factorial(4);
-factorial(5);
-factorial(6);
+catspeak_execute_ext(factorial, id, [(1)]);
+catspeak_execute_ext(factorial, id, [(2)]);
+catspeak_execute_ext(factorial, id, [(3)]);
+catspeak_execute_ext(factorial, id, [(4)]);
+catspeak_execute_ext(factorial, id, [(5)]);
+catspeak_execute_ext(factorial, id, [(6)]);
 show_debug_message("GMLspeak Manual factorial: " + string((get_timer() - _t) / 1000));
 
 var _t = get_timer();
@@ -171,12 +171,29 @@ testSwitch = function(result) {
 ';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
-program(self);
+catspeak_execute(program, self);
 show_debug_message("Result: " + string(testSwitch(0)));
 show_debug_message("Result: " + string(testSwitch(1)));
 show_debug_message("Result: " + string(testSwitch(2)));
 show_debug_message("Result: " + string(testSwitch(3)));
 show_debug_message("Result: " + string(testSwitch(4)));
+
+show_debug_message("For loop tests");
+
+var _code = @'
+var i = 0;
+for(;;) {
+	show_debug_message(i);
+	i += 1;
+	if (i > 9) {
+		break;
+	}
+}
+
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+catspeak_execute(program);
 
 //show_debug_message("Room switch test");
 //var _code = @'
@@ -265,3 +282,12 @@ show_debug_message(json_stringify(struct));
 drawProgram = gmlspeak.compileGML(gmlspeak.parseString(@'
 draw_self();
 '));
+
+show_debug_message("Self/Other test");
+var _code = @'
+return [self, other]';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+gmlspeak.sharedGlobal.foo = "bar";
+var results = catspeak_execute_ext(program, self);
+show_debug_message(variable_struct_get_names(results[1]));

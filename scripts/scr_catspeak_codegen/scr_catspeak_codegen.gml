@@ -25,12 +25,25 @@ function __catspeak_infer_function_name(func) {
 /// Checks whether a value is a valid Catspeak function compiled through
 /// `CatspeakGMLCompiler`.
 ///
+/// @warning
+///   Internally, this actually just checks whether the methods name starts
+///   with `__catspeak_`. Because of this, you should avoid giving your
+///   functions that prefix to prevent false positives.
+///
 /// @param {Any} value
 ///   The value to check is a Catspeak function.
 ///
 /// @return {Bool}
 function is_catspeak(value) {
-    return is_method(value) && method_get_index(value) == __catspeak_function__;
+    if (!is_method(value)) {
+        return false;
+    }
+    var scr = method_get_index(value);
+    if (scr == __catspeak_function__) {
+        return true;
+    }
+    var scrName = script_get_name(scr);
+    return string_starts_with(scrName, "__catspeak_");
 }
 
 /// Used by Catspeak code generators to expose foreign GML functions,
@@ -165,7 +178,7 @@ function CatspeakForeignInterface() constructor {
             var func = argument[i + 1];
             if (CATSPEAK_DEBUG_MODE) {
                 __catspeak_check_arg("name", name, is_string);
-                __catspeak_check_arg("func", func, is_method);
+                //__catspeak_check_arg("func", func, is_method);
             }
             func = is_method(func) ? func : method(undefined, func);
             database[$ name] = func;
@@ -218,11 +231,50 @@ function CatspeakForeignInterface() constructor {
     static exposeFunctionByName = function () {
         for (var i = 0; i < argument_count; i += 1) {
             var func = argument[i];
-            if (CATSPEAK_DEBUG_MODE) {
-                //__catspeak_check_arg("func", func, __catspeak_is_callable);
+            var name;
+            if (is_string(func)) {
+                name = func;
+                func = undefined;
+                if (
+                    !string_starts_with(name, "<unknown>") &&
+                    !string_starts_with(name, "@@") &&
+                    !string_starts_with(name, "$") &&
+                    !string_starts_with(name, "YoYo") &&
+                    !string_starts_with(name, "yy") &&
+                    !string_starts_with(name, "[[") &&
+                    !string_starts_with(name, "__")
+                ) {
+                    for(var builtinID = 0; builtinID < 10000; builtinID += 1;) {
+                        var scriptName = script_get_name(builtinID);
+                        if (scriptName == name) {
+                            func = builtinID;
+                            break;
+                        }
+                    }
+                }
+                if (func == undefined) {
+                    for (var scriptID = 100001; script_exists(scriptID); scriptID += 1) {
+                        var scriptName = script_get_name(scriptID);
+                        if (
+                            string_starts_with(scriptName, "anon") ||
+                            string_count("gml_GlobalScript", scriptName) > 0 ||
+                            string_count("__struct__", scriptName) > 0
+                        ) {
+                            continue;
+                        }
+                        if (scriptName == name) {
+                            func = scriptID;
+                            break;
+                        }
+                    }
+                }
+                if (func == undefined) {
+                    __catspeak_error("function with the name '", name, "' cannot be found");
+                }
+            } else {
+                name = __catspeak_infer_function_name(func);
+                func = is_method(func) ? method_get_index(func) : func;
             }
-            var name = __catspeak_infer_function_name(func);
-            func = is_method(func) ? method_get_index(func) : func;
             database[$ name] = method(undefined, func);
         }
     };
@@ -244,7 +296,25 @@ function CatspeakForeignInterface() constructor {
             //
             // their positions aren't always 100% known, except for anon
             // (which is always at the front)
+            //
+            // NOTE: not GMRT compatible
             var database_ = database;
+            if (
+                !string_starts_with(namespace, "<unknown>") &&
+                !string_starts_with(namespace, "@@") &&
+                !string_starts_with(namespace, "$") &&
+                !string_starts_with(namespace, "YoYo") &&
+                !string_starts_with(namespace, "yy") &&
+                !string_starts_with(namespace, "[[") &&
+                !string_starts_with(namespace, "__")
+            ) {
+                for(var builtinID = 0; builtinID < 10000; builtinID += 1;) {
+                    var name = script_get_name(builtinID);
+                    if (string_starts_with(name, namespace)) {
+                        database_[$ name] = method(undefined, builtinID);
+                    }
+                }
+            }
             for (var scriptID = 100001; script_exists(scriptID); scriptID += 1) {
                 var name = script_get_name(scriptID);
                 if (
@@ -306,10 +376,49 @@ function CatspeakForeignInterface() constructor {
     static exposeMethodByName = function () {
         for (var i = 0; i < argument_count; i += 1) {
             var func = argument[i];
-            if (CATSPEAK_DEBUG_MODE) {
-                //__catspeak_check_arg("func", func, __catspeak_is_callable);
+            var name;
+            if (is_string(func)) {
+                name = func;
+                func = undefined;
+                if (
+                    !string_starts_with(name, "<unknown>") &&
+                    !string_starts_with(name, "@@") &&
+                    !string_starts_with(name, "$") &&
+                    !string_starts_with(name, "YoYo") &&
+                    !string_starts_with(name, "yy") &&
+                    !string_starts_with(name, "[[") &&
+                    !string_starts_with(name, "__")
+                ) {
+                    for(var builtinID = 0; builtinID < 10000; builtinID += 1;) {
+                        var scriptName = script_get_name(builtinID);
+                        if (scriptName == name) {
+                            func = builtinID;
+                            break;
+                        }
+                    }
+                }
+                if (func == undefined) {
+                    for (var scriptID = 100001; script_exists(scriptID); scriptID += 1) {
+                        var scriptName = script_get_name(scriptID);
+                        if (
+                            string_starts_with(scriptName, "anon") ||
+                            string_count("gml_GlobalScript", scriptName) > 0 ||
+                            string_count("__struct__", scriptName) > 0
+                        ) {
+                            continue;
+                        }
+                        if (scriptName == name) {
+                            func = scriptID;
+                            break;
+                        }
+                    }
+                }
+                if (func == undefined) {
+                    __catspeak_error("method with the name '", name, "' cannot be found");
+                }
+            } else {
+                name = __catspeak_infer_function_name(func);
             }
-            var name = __catspeak_infer_function_name(func);
             func = is_method(func) ? func : method(undefined, func);
             database[$ name] = func;
         }
@@ -690,18 +799,79 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
     /// @param {Struct} ctx
     /// @param {Struct} term
     /// @return {Function}
-    static __compileWhile = function (ctx, term) {
+    static __compileLoop = function (ctx, term) {
         if (CATSPEAK_DEBUG_MODE) {
             __catspeak_check_arg_struct("term", term,
-                "condition", undefined,
+                "preCondition", undefined,
+                "postCondition", undefined,
+                "step", undefined,
+                "body", undefined
+            );
+        }
+        var preCondition_ = term.preCondition == undefined
+                ? undefined : __compileTerm(ctx, term.preCondition);
+        var body_ = term.body == undefined
+                ? undefined : __compileTerm(ctx, term.body);
+        var postCondition_ = term.postCondition == undefined
+                ? undefined : __compileTerm(ctx, term.postCondition);
+        var step_ = term.step == undefined
+                ? undefined : __compileTerm(ctx, term.step);
+        if (
+            preCondition_ != undefined &&
+            postCondition_ == undefined
+        ) {
+            if (term.step == undefined) {
+                return method({
+                    ctx : ctx,
+                    condition : preCondition_,
+                    body : body_,
+                }, __catspeak_expr_loop_while__);
+            } else {
+                return method({
+                    ctx : ctx,
+                    condition : preCondition_,
+                    body : body_,
+                    step : step_,
+                }, __catspeak_expr_loop_for__);
+            }
+        }
+        if (
+            preCondition_ == undefined &&
+            postCondition_ != undefined &&
+            step_ == undefined
+        ) {
+            return method({
+                ctx : ctx,
+                condition : postCondition_,
+                body : body_,
+            }, __catspeak_expr_loop_do__);
+        }
+        
+        return method({
+            ctx : ctx,
+            preCondition : preCondition_,
+            postCondition : postCondition_,
+            step : step_,
+            body : body_,
+        }, __catspeak_expr_loop_general__);
+    };
+
+    /// @ignore
+    ///
+    /// @param {Struct} ctx
+    /// @param {Struct} term
+    /// @return {Function}
+    static __compileWith = function(ctx, term) {
+        if (CATSPEAK_DEBUG_MODE) {
+            __catspeak_check_arg_struct("term", term,
+                "scope", undefined,
                 "body", undefined
             );
         }
         return method({
-            ctx : ctx,
-            condition : __compileTerm(ctx, term.condition),
+            scope : __compileTerm(ctx, term.scope),
             body : __compileTerm(ctx, term.body),
-        }, __catspeak_expr_while__);
+        }, __catspeak_expr_loop_with__);
     };
 
     /// @ignore
@@ -727,25 +897,6 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
             value: __compileTerm(ctx, term.value),
             arms: term.arms,
         }, __catspeak_expr_match__);
-    };
-
-    /// @ignore
-    ///
-    /// @param {Struct} ctx
-    /// @param {Struct} term
-    /// @return {Function}
-    static __compileUse = function (ctx, term) {
-        if (CATSPEAK_DEBUG_MODE) {
-            __catspeak_check_arg_struct("term", term,
-                "condition", undefined,
-                "body", undefined
-            );
-        }
-        return method({
-            dbgError : __dbgTerm(term.condition, "is not a function"),
-            condition : __compileTerm(ctx, term.condition),
-            body : __compileTerm(ctx, term.body),
-        }, __catspeak_expr_use__);
     };
 
     /// @ignore
@@ -884,6 +1035,7 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
         for (var i = 0; i < argCount; i += 1) {
             exprs[@ i] = __compileTerm(ctx, args[i]);
         }
+        var dbgError = __dbgTerm(term.callee, "is not a function");
         if (term.callee.type == CatspeakTerm.INDEX) {
             if (CATSPEAK_DEBUG_MODE) {
                 __catspeak_check_arg_struct("term.callee", term.callee,
@@ -894,7 +1046,7 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
             var collection = __compileTerm(ctx, term.callee.collection);
             var key = __compileTerm(ctx, term.callee.key);
             return method({
-                dbgError : __dbgTerm(term.callee, "is not a function"),
+                dbgError : dbgError,
                 collection : collection,
                 key : key,
                 args : exprs,
@@ -902,12 +1054,19 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
             }, __catspeak_expr_call_method__);
         } else {
             var callee = __compileTerm(ctx, term.callee);
+            var func = __catspeak_expr_call__;
+            switch (array_length(exprs)) {
+            case 0: func = __catspeak_expr_call_0__; break;
+            case 1: func = __catspeak_expr_call_1__; break;
+            case 2: func = __catspeak_expr_call_2__; break;
+            case 3: func = __catspeak_expr_call_3__; break;
+            }
             return method({
-                dbgError : __dbgTerm(term.callee, "is not a function"),
+                dbgError : dbgError,
                 callee : callee,
                 args : exprs,
                 shared : sharedData,
-            }, __catspeak_expr_call__);
+            }, func);
         }
     };
 
@@ -1091,9 +1250,8 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
                 return method({
                     dbgError : __dbgTerm(term, "is not a function"),
                     callee : _callee,
-                    args : [],
                     shared : sharedData,
-                }, __catspeak_expr_call__);
+                }, __catspeak_expr_call_0__);
             } else {
                 // user-defined interface
                 return _callee;
@@ -1177,9 +1335,9 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
         db[@ CatspeakTerm.STRUCT] = __compileStruct;
         db[@ CatspeakTerm.BLOCK] = __compileBlock;
         db[@ CatspeakTerm.IF] = __compileIf;
-        db[@ CatspeakTerm.WHILE] = __compileWhile;
+        db[@ CatspeakTerm.LOOP] = __compileLoop;
+        db[@ CatspeakTerm.WITH] = __compileWith;
         db[@ CatspeakTerm.MATCH] = __compileMatch;
-        db[@ CatspeakTerm.USE] = __compileUse;
         db[@ CatspeakTerm.RETURN] = __compileReturn;
         db[@ CatspeakTerm.BREAK] = __compileBreak;
         db[@ CatspeakTerm.CONTINUE] = __compileContinue;
@@ -1264,13 +1422,13 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
 /// @return {Any}
 function __catspeak_function__() {
     var isRecursing = callTime >= 0;
+    var localCount = array_length(locals);
     if (isRecursing) {
         // catch unbound recursion
         __catspeak_timeout_check(callTime);
         // store the previous local variable array
         // this will make function recursion quite expensive, but
         // hopefully that's uncommon enough for it to not matter
-        var localCount = array_length(locals);
         var oldLocals = array_create(localCount);
         array_copy(oldLocals, 0, locals, 0, localCount);
     } else {
@@ -1297,6 +1455,10 @@ function __catspeak_function__() {
         } else {
             // reset the timer
             callTime = -1;
+            // Clear locals
+            // Gone with array_resize, as it's faster to resize than to loop
+            array_resize(locals, 0);
+            array_resize(locals, localCount);
         }
     }
     return value;
@@ -1421,7 +1583,7 @@ function __catspeak_expr_or__() {
 
 /// @ignore
 /// @return {Any}
-function __catspeak_expr_while__() {
+function __catspeak_expr_loop_while__() {
     var callTime = ctx.callTime;
     var condition_ = condition;
     var body_ = body;
@@ -1437,10 +1599,107 @@ function __catspeak_expr_while__() {
             }
         }
     }
+    return undefined;
 }
 
 /// @ignore
-///@return {Any}
+/// @return {Any}
+function __catspeak_expr_loop_for__() {
+    var callTime = ctx.callTime;
+    var condition_ = condition;
+    var step_ = step;
+    var body_ = body;
+    while (condition_()) {
+        __catspeak_timeout_check(callTime);
+        try {
+            body_();
+        } catch (e) {
+            if (e == global.__catspeakGmlBreakRef) {
+                return e[0];
+            } else if (e != global.__catspeakGmlContinueRef) {
+                throw e;
+            }
+        }
+        step_();
+    }
+    return undefined;
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_loop_do__() {
+    var callTime = ctx.callTime;
+    var condition_ = condition;
+    var body_ = body;
+    do {
+        __catspeak_timeout_check(callTime);
+        try {
+            body_();
+        } catch (e) {
+            if (e == global.__catspeakGmlBreakRef) {
+                return e[0];
+            } else if (e != global.__catspeakGmlContinueRef) {
+                throw e;
+            }
+        }
+    } until (!condition_());
+    return undefined;
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_loop_general__() {
+    var callTime = ctx.callTime;
+    var preCondition_ = preCondition;
+    var postCondition_ = postCondition;
+    var step_ = step;
+    var body_ = body;
+    while (true) {
+        __catspeak_timeout_check(callTime);
+        if (preCondition_ != undefined && !preCondition_()) {
+            break;
+        }
+        try {
+            body_();
+        } catch (e) {
+            if (e == global.__catspeakGmlBreakRef) {
+                return e[0];
+            } else if (e != global.__catspeakGmlContinueRef) {
+                throw e;
+            }
+        }
+        if (postCondition_ != undefined && !postCondition_()) {
+            break;
+        }
+        if (step_ != undefined) {
+            step_();
+        }
+    }
+    return undefined;
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_loop_with__() {
+    var body_ = body;
+    with (scope()) {
+        __CATSPEAK_BEGIN_SELF = self;
+        try {
+            body_();
+        } catch (e) {
+            if (e == global.__catspeakGmlBreakRef) {
+                return e[0];
+            } else if (e != global.__catspeakGmlContinueRef) {
+                throw e;
+            }
+        }
+        __CATSPEAK_END_SELF;
+    }
+    return undefined;
+}
+
+/// @ignore
+/// @return {Any}
 function __catspeak_expr_match__() {
     var value_ = value();
     var i = 0;
@@ -1461,27 +1720,6 @@ function __catspeak_expr_match__() {
 
 /// @ignore
 /// @return {Any}
-function __catspeak_expr_use__() {
-    var body_ = body;
-    var open = condition();
-    if (!is_method(open)) {
-        __catspeak_error_got(dbgError, open);
-    }
-    var close = open();
-    if (!is_method(close)) {
-        __catspeak_error_got(dbgError, close);
-    }
-    var result;
-    try {
-        result = body_();
-    } finally {
-        close();
-    }
-    return result;
-}
-
-/// @ignore
-/// @return {Any}
 function __catspeak_expr_while_simple__() {
     var callTime = ctx.callTime;
     var condition_ = condition;
@@ -1490,6 +1728,7 @@ function __catspeak_expr_while_simple__() {
         __catspeak_timeout_check(callTime);
         body_();
     }
+    return undefined;
 }
 
 /// @ignore
@@ -1593,6 +1832,91 @@ function __catspeak_expr_call__() {
     with (method_get_self(callee_) ?? (shared_.self_ ?? shared_.globals)) {
         var calleeIdx = method_get_index(callee_);
         return script_execute_ext(calleeIdx, args_);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_call_0__() {
+    var callee_ = callee();
+    if (!is_method(callee_)) {
+        __catspeak_error_got(dbgError, callee_);
+    }
+    var shared_ = shared;
+	
+    if (method_get_self(callee_) != undefined) {
+        return callee_();
+    }
+	
+    with (shared_.self_ ?? shared_.globals) {
+        var calleeIdx = method_get_index(callee_);
+        return script_execute(calleeIdx);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_call_1__() {
+    var callee_ = callee();
+    if (!is_method(callee_)) {
+        __catspeak_error_got(dbgError, callee_);
+    }
+    var values_ = args;
+    var arg1 = values_[0]();
+    var shared_ = shared;
+	
+    if (method_get_self(callee_) != undefined) {
+        return callee_(arg1);
+    }
+	
+    with (shared_.self_ ?? shared_.globals) {
+        var calleeIdx = method_get_index(callee_);
+        return script_execute(calleeIdx, arg1);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_call_2__() {
+    var callee_ = callee();
+    if (!is_method(callee_)) {
+        __catspeak_error_got(dbgError, callee_);
+    }
+    var values_ = args;
+    var arg1 = values_[0]();
+    var arg2 = values_[1]();
+    var shared_ = shared;
+	
+    if (method_get_self(callee_) != undefined) {
+        return callee_(arg1, arg2);
+    }
+	
+    with (shared_.self_ ?? shared_.globals) {
+        var calleeIdx = method_get_index(callee_);
+        return script_execute(calleeIdx, arg1, arg2);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_call_3__() {
+    var callee_ = callee();
+    if (!is_method(callee_)) {
+        __catspeak_error_got(dbgError, callee_);
+    }
+    var values_ = args;
+    var arg1 = values_[0]();
+    var arg2 = values_[1]();
+    var arg3 = values_[2]();
+    var shared_ = shared;
+	
+    if (method_get_self(callee_) != undefined) {
+        return callee_(arg1, arg2, arg3);
+    }
+	
+    with (shared_.self_ ?? shared_.globals) {
+        var calleeIdx = method_get_index(callee_);
+        return script_execute(calleeIdx, arg1, arg2, arg3);
     }
 }
 
@@ -1863,7 +2187,13 @@ function __catspeak_expr_local_set_plus__() {
 function __catspeak_expr_self__() {
     // will either access a user-defined self instance, or the internal
     // global struct
-    return self_ ?? globals;
+    return global.__catspeakGmlSelf ?? (self_ ?? globals);
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_other__() {
+    return global.__catspeakGmlOther ?? globals;
 }
 
 /// @ignore
@@ -1874,4 +2204,8 @@ function __catspeak_init_codegen() {
     global.__catspeakGmlBreakRef = [undefined];
     /// @ignore
     global.__catspeakGmlContinueRef = [];
+    /// @ignore
+    global.__catspeakGmlSelf = undefined;
+    /// @ignore
+    global.__catspeakGmlOther = undefined;
 }

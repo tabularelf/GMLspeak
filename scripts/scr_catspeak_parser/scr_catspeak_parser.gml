@@ -171,18 +171,18 @@ function CatspeakParser(lexer, builder) constructor {
             __parseStatements("while");
             var body = ir.popBlock();
             return ir.createWhile(condition, body, lexer.getLocation());
+        } else if (peeked == CatspeakToken.WITH) {
+            lexer.next();
+            var scope = __parseCondition();
+            ir.pushBlock();
+            __parseStatements("with");
+            var body = ir.popBlock();
+            return ir.createWith(scope, body, lexer.getLocation());
         } else if (peeked == CatspeakToken.MATCH) {
             lexer.next();
             var value = __parseExpression();
             var conditions = __parseMatchArms();
             return ir.createMatch(value, conditions, lexer.getLocation());
-        } else if (peeked == CatspeakToken.USE) {
-            lexer.next();
-            var condition = __parseCondition();
-            ir.pushBlock();
-            __parseStatements("use");
-            var body = ir.popBlock();
-            return ir.createUse(condition, body, lexer.getLocation());
         } else if (peeked == CatspeakToken.FUN) {
             lexer.next();
             ir.pushFunction();
@@ -460,10 +460,10 @@ function CatspeakParser(lexer, builder) constructor {
             var op = __catspeak_operator_from_token(peeked);
             var value = __parseIndex();
             return ir.createUnary(op, value, lexer.getLocation());
-        } else if (peeked == CatspeakToken.COLON) {
-            // `:property` syntax
-            lexer.next();
-            return ir.createProperty(__parseTerminal(), lexer.getLocation());
+        //} else if (peeked == CatspeakToken.COLON) {
+        //    // `:property` syntax
+        //    lexer.next();
+        //    return ir.createProperty(__parseTerminal(), lexer.getLocation());
         } else {
             return __parseIndex();
         }
