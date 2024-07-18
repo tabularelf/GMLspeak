@@ -94,6 +94,10 @@ factorial = function (n) {
 
 factorial(1) // result: 1
 factorial(2) // result: 2
+factorial(3) // result: 1
+factorial(4) // result: 2
+factorial(5) // result: 1
+factorial(6) // result: 2
 ';
 
 var programGMLspeak = gmlspeak.compileGML(gmlspeak.parseString(code));
