@@ -1,4 +1,4 @@
-# GMLspeak v1.0.0
+# GMLspeak v1.1.0
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)! (**Experimental currently!!!**)
 
 # Supported Features
@@ -7,15 +7,13 @@
 - Comment blocks (every developers favourite `/* Secret little message */`)
 - Almost every single constant and dynamic constant GML has to offer (including custom `global`, sith a toggle to fully expose global).
 - custom self/other scope system. (head programs require passing self/other scope as arguments)
-- with() support (one scope at a time currently, works with `break` due to a hackaround)
+- with() support (via Catspeak)
 - do/until loops
-- automatic methodizing
+- automatic methodizing of functions (respects the caller scope)
 - Switch/case (as oppose to match/case)
 - Nullish coalescing operator `valueA ?? valueB` and tenary operator `value == otherValue ? valueA : valueB` support
 
 # To be added
-- with support for objects.
-- with support for break/continue/return. ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/118))
 - methods with "global" scope self assign as "undefined" instead.
 - Unlimited non-named Arguments ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/52))
   
