@@ -6,7 +6,7 @@
 //! possible for you to cache the result of parsing a mod to a file, instead
 //! of re-parsing each time the game loads.
 
-//# feather use syntax-errors
+/// @feather ignore all
 
 /// Consumes tokens produced by a `CatspeakLexer`, transforming the program
 /// they represent into Catspeak IR. This Catspeak IR can be further compiled

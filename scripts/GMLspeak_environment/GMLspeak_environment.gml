@@ -1,3 +1,4 @@
+/// @feather ignore all
 function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
@@ -120,11 +121,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	
 	interface.exposeFunction( 
 		"method",
-		catspeak_method,
-		"$$__SCOPE_PUSH__$$",
-		gmlspeak_push_scope,
-		"$$__SCOPE_POP__$$",
-		gmlspeak_pop_scope,
+		__gmlspeak_method__,
 		"$$__IS_NOT_NULLISH__$$", 
 		function(value) {
 			return (value != undefined) && (value != pointer_null);	

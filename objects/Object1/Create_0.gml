@@ -5,9 +5,6 @@ show_debug_message((get_timer() - _t) / 1000);
 
 var _t = get_timer();
 gmlspeak = new GMLspeakEnvironment();
-gmlspeak.sharedGlobal = (method(global, function() {
-	return self;
-}))();
 show_debug_message((get_timer() - _t) / 1000);
 
 gmlspeak.interface.exposeFunction("string", string);
@@ -15,9 +12,10 @@ gmlspeak.interface.exposeFunction("real", real);
 gmlspeak.interface.exposeFunction("get_timer", get_timer);
 gmlspeak.interface.exposeFunction("show_debug_message", show_debug_message,
 	"draw_self", 
-	function() {
-		with(gmlspeak_self()) draw_self();
-	});
+	method(undefined, function() {
+		draw_self();
+	})
+);
 catspeak.interface.exposeFunction("string", string);
 catspeak.interface.exposeFunction("show_debug_message", show_debug_message);
 gmlspeak.interface.exposeFunction(
@@ -115,16 +113,16 @@ globals.factorial(5);
 globals.factorial(6);
 show_debug_message("Catspeak Manual factorial: " + string((get_timer() - _t) / 1000));
 var _t = get_timer();
-catspeak_execute_ext(programGMLspeak, id);
+catspeak_execute(programGMLspeak);
 show_debug_message("GMLspeak factorial: " + string((get_timer() - _t) / 1000));
 
 var _t = get_timer();
-catspeak_execute_ext(factorial, id, [(1)]);
-catspeak_execute_ext(factorial, id, [(2)]);
-catspeak_execute_ext(factorial, id, [(3)]);
-catspeak_execute_ext(factorial, id, [(4)]);
-catspeak_execute_ext(factorial, id, [(5)]);
-catspeak_execute_ext(factorial, id, [(6)]);
+catspeak_execute(factorial, 1);
+catspeak_execute(factorial, 2);
+catspeak_execute(factorial, 3);
+catspeak_execute(factorial, 4);
+catspeak_execute(factorial, 5);
+catspeak_execute(factorial, 6);
 show_debug_message("GMLspeak Manual factorial: " + string((get_timer() - _t) / 1000));
 
 var _t = get_timer();
