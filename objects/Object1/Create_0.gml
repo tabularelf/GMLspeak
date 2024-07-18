@@ -283,9 +283,11 @@ draw_self();
 
 show_debug_message("Self/Other test");
 var _code = @'
-return [self, other]';
+with(other) {
+	show_debug_message(foo);
+}';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 gmlspeak.sharedGlobal.foo = "bar";
-var results = catspeak_execute_ext(program, self);
-show_debug_message(variable_struct_get_names(results[1]));
+catspeak_execute_ext(program, self);
+//show_debug_message(variable_struct_get_names(results[1]));

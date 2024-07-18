@@ -101,7 +101,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"default",			GMLspeakToken.DEFAULT,
 		"/*",				GMLspeakToken.COMMENT_LONG,
 		"*/",				GMLspeakToken.COMMENT_LONG_END,
-		"with",				GMLspeakToken.WITH,
 		"??",				GMLspeakToken.NULLISH,
 		"??=",				GMLspeakToken.NULLISH_ASSIGN,
 		"?",				GMLspeakToken.CONDITIONAL_OPERATOR,
