@@ -156,7 +156,6 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             var lhs = condition;
             var rhs = ir.createValue(true);
 			condition = ir.createBinary(op, lhs, rhs, lexer.getLocation());
-			ir.createStatement(block);
 			return ir.createLoop(undefined, condition, undefined, block, lexer.getLocation());
         } else if (peeked == CatspeakToken.IF) {
             lexer.next();
