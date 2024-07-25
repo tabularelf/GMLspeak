@@ -291,19 +291,132 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         }
     };
 	
-	static __parseStatementsColon = function (keyword) {
-        if (lexer.next() != CatspeakToken.COLON) {
-            __ex("expected opening ':' at the start of '", keyword, "' block");
-        }
-        while (__isNot(CatspeakToken.BRACE_RIGHT)) {
-            __parseStatement();
-        }
-        if (lexer.next() != CatspeakToken.BRACE_RIGHT) {
-            __ex("expected closing '}' after '", keyword, "' block");
-        } else {
-			return true;	
+    /// @ignore
+    ///
+    /// @return {Struct}
+    static __parseCondition = function () {
+        return __parseAssign();
+    };
+
+	/// @ignore
+    ///
+    /// @return {Struct}
+	static __parseAssignAlarm = function (key) {
+		var lhs;	
+		var accessorFunction = ir.createGet("$$__ALARM_ACCESSOR__$$");
+		var peeked = lexer.peek();
+        if (
+            peeked == CatspeakToken.ASSIGN ||
+            peeked == CatspeakToken.ASSIGN_MULTIPLY ||
+            peeked == CatspeakToken.ASSIGN_DIVIDE ||
+            peeked == CatspeakToken.ASSIGN_SUBTRACT ||
+            peeked == CatspeakToken.ASSIGN_PLUS
+        ) {
+            lexer.next();
+			var assignType;
+			switch(peeked) {
+				case CatspeakToken.ASSIGN: assignType = undefined; break;	
+				case CatspeakToken.ASSIGN_MULTIPLY: assignType = CatspeakOperator.MULTIPLY; break;	
+				case CatspeakToken.ASSIGN_DIVIDE: assignType = CatspeakOperator.DIVIDE; break;	
+				case CatspeakToken.ASSIGN_SUBTRACT: assignType = CatspeakOperator.SUBTRACT; break;	
+				case CatspeakToken.ASSIGN_PLUS: assignType = CatspeakOperator.PLUS; break;	
+			}
+			
+			if (assignType != undefined) {
+				lhs = ir.createBinary(
+				    assignType,
+				    ir.createCall(accessorFunction, [key]),
+				    __parseAsSelf(__parseExpression()),
+				    lexer.getLocation()
+				);
+				
+				lhs = ir.createCall(
+					accessorFunction, 
+					[key, lhs]
+				);
+			} else {
+				lhs = __parseAsSelf(__parseExpression());
+				
+				lhs = ir.createCall(
+						accessorFunction, 
+						[key, lhs],
+						lexer.getLocation()
+					);
+			}
+			
+			return lhs;
 		}
-		return false;
+		
+		return ir.createCall(accessorFunction, [key], lexer.getLocation());
+	}
+	
+    /// @ignore
+    ///
+    /// @return {Struct}
+    static __parseAssignAccessor = function (accessorFunction, collection, key) {
+		var lhs;
+		var lhsArray = [collection];
+		if (is_array(key)) {
+			array_copy(lhsArray, 1, key, 0, array_length(key));
+		} else {
+			array_push(lhsArray, key);
+		}
+        var peeked = lexer.peek();
+        if (
+            peeked == CatspeakToken.ASSIGN ||
+            peeked == CatspeakToken.ASSIGN_MULTIPLY ||
+            peeked == CatspeakToken.ASSIGN_DIVIDE ||
+            peeked == CatspeakToken.ASSIGN_SUBTRACT ||
+            peeked == CatspeakToken.ASSIGN_PLUS
+        ) {
+            lexer.next();
+			var assignType;
+			switch(peeked) {
+				case CatspeakToken.ASSIGN: assignType = undefined; break;	
+				case CatspeakToken.ASSIGN_MULTIPLY: assignType = CatspeakOperator.MULTIPLY; break;	
+				case CatspeakToken.ASSIGN_DIVIDE: assignType = CatspeakOperator.DIVIDE; break;	
+				case CatspeakToken.ASSIGN_SUBTRACT: assignType = CatspeakOperator.SUBTRACT; break;	
+				case CatspeakToken.ASSIGN_PLUS: assignType = CatspeakOperator.PLUS; break;	
+			}
+            //var assignType = __catspeak_operator_assign_from_token(peeked);
+			if (assignType != undefined) {
+				lhs = ir.createBinary(
+				    assignType,
+				    ir.createCall(accessorFunction, lhsArray),
+				    __parseAsSelf(__parseExpression()),
+				    lexer.getLocation()
+				);
+				
+				lhs = ir.createCall(
+					accessorFunction, 
+					is_array(key) ? [collection, key[0], key[1], lhs] : [collection, key, lhs]
+				);
+			} else {
+				lhs = __parseAsSelf(__parseExpression());
+				
+				lhs = ir.createCall(
+					accessorFunction, 
+						is_array(key) ? [collection, key[0], key[1], lhs] : [collection, key, lhs],
+						lexer.getLocation()
+					);
+			}
+        } else if (peeked == GMLspeakToken.NULLISH_ASSIGN) {
+			lexer.next();
+			lhs = __parseAsSelf(__parseExpression());
+			var rhs = ir.createCall(
+				accessorFunction, 
+				is_array(key) ? [collection, key[0], key[1], lhs] : [collection, key, lhs],
+				lexer.getLocation()
+			);
+			
+			
+			lhs = ir.createCall(accessorFunction, lhsArray, lexer.getLocation());;
+			var condition = ir.createCall(ir.createGet("$$__IS_NOT_NULLISH__$$"), [lhs], lexer.getLocation());
+			lhs = ir.createIf(condition, ir.createValue(undefined), rhs, lexer.getLocation());
+		} else {
+			lhs = ir.createCall(accessorFunction, lhsArray); // GET
+		}
+        return lhs;
     };
 
     /// @ignore
@@ -376,7 +489,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 				var condition = ir.createCall(ir.createGet("$$__IS_NOT_NULLISH__$$"), [result], lexer.getLocation());
 				var rhs = __parseExpression();
 				return ir.createIf(condition, result, rhs, lexer.getLocation());
-			} else if (peeked == GMLspeakToken.CONDITIONAL_OPERATOR) {
+			} else if (peeked == GMLspeakToken.QUESTION_MARK_SIGN) {
 				lexer.next();
 				var lhs = __parseExpression();
 				lexer.next();
@@ -466,7 +579,8 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             var peeked = lexer.peek();
             if (
                 peeked == CatspeakToken.EQUAL ||
-                peeked == CatspeakToken.NOT_EQUAL
+                peeked == CatspeakToken.NOT_EQUAL 
+				//peeked == CatspeakToken.ASSIGN
             ) {
                 lexer.next();
                 var op = __catspeak_operator_from_token(peeked);
@@ -563,11 +677,29 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             var op = __catspeak_operator_from_token(peeked);
             var value = __parseIndex();
             return ir.createUnary(op, value, lexer.getLocation());
-        } else if (peeked == CatspeakToken.COLON) {
-            // `:property` syntax
-            lexer.next();
-            return __parseExpression();
-        } else {
+        //} else if (peeked == CatspeakToken.COLON) {
+        //    // `:property` syntax
+        //    lexer.next();
+        //    return __parseExpression();
+        } else if (peeked == GMLspeakToken.KEYBOARD_STRING) {
+			lexer.next();
+			return ir.createProperty(ir.createGet("$$__KEYBOARD_STRING__$$"), lexer.getLocation());
+		} else if (peeked == GMLspeakToken.ROOM) {
+			lexer.next();
+			return ir.createProperty(ir.createGet("$$__ROOM__$$"), lexer.getLocation());
+		} else if (peeked == GMLspeakToken.ALARM) {
+			lexer.next();
+			if (lexer.peek() != CatspeakToken.BOX_LEFT) {
+				__ex("Bad");	
+			}
+			lexer.next();
+			var key = __parseExpression();
+			if (lexer.next() != CatspeakToken.BOX_RIGHT) {
+				__ex("Bad");	
+			}
+			var result = __parseAssignAlarm(key);
+			return result;
+		} else {
             return __parseIndex();
         }
     };
@@ -594,9 +726,16 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			var prefix = lexer.next();
 			if (prefix == GMLspeakToken.DEFAULT) {
 				value = undefined;	
+				if (lexer.peek() == CatspeakToken.COLON) {
+					lexer.next();	
+				}
 			} else {
-				value =	__parseExpression();
+				lexer.peek();
+				value =	ir.createValue(lexer.getValue(), lexer.getLocation());//__parseExpression();//
 				lexer.next();
+				if (lexer.peek() == CatspeakToken.COLON) {
+					lexer.next();	
+				}
 				// Multistack case
 				if (lexer.peek() == GMLspeakToken.CASE) {
 					statements = [value];
@@ -605,7 +744,11 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 							lexer.next();	
 						}
 							
-						array_push(statements, __parseExpression());
+						array_push(statements, ir.createValue(lexer.getValue(), lexer.getLocation()));
+						
+						if (lexer.peek() == CatspeakToken.COLON) {
+							lexer.next();	
+						}
 						lexer.next();
 					}
 				}
@@ -675,6 +818,27 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         if (callNew) {
             lexer.next();
         }
+		// Parse any possible symbols
+		var initialSymbol = undefined;
+		//if (lexer.peek() == GMLspeakToken.AT_SIGN) {
+		//	lexer.next();
+		//	show_debug_message("a");
+		//}
+		switch(lexer.peek()) {
+			case GMLspeakToken.AT_SIGN: lexer.next(); break;
+			case GMLspeakToken.DOLLAR_SIGN: 
+				//initialSymbol = GMLspeakToken.DOLLAR_SIGN; 
+				lexer.next();
+			break;
+			case GMLspeakToken.QUESTION_MARK_SIGN: 
+				initialSymbol = GMLspeakToken.QUESTION_MARK_SIGN; 
+				lexer.next();
+			break;
+			case GMLspeakToken.HASH_SIGN: 
+				initialSymbol = GMLspeakToken.HASH_SIGN; 
+				lexer.next();
+			break;
+		}
         var result = __parseTerminal();
         while (true) {
             var peeked = lexer.peek();
@@ -701,16 +865,73 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 callNew = false;
             } else if (peeked == CatspeakToken.BOX_LEFT) {
                 // accessor syntax
-                lexer.next();
+				lexer.next()
+                var symbol = initialSymbol ?? lexer.peek();
+				initialSymbol = undefined;
                 var collection = result;
-				var key = __parseExpression();
+				var key;
+				var symbolUsed = false;
+				switch(symbol) {
+					default:
+						if(lexer.getLexeme() == "#") {
+							lexer.next();
+							key = [];
+							array_push(key, __parseExpression());
+							if (lexer.next() != CatspeakToken.COMMA) {
+								__ex("bad");	
+							}
+							array_push(key, __parseExpression());
+							symbolUsed = true;
+							symbol = GMLspeakToken.HASH_SIGN;
+						} else key = __parseExpression();
+					break;
+					case GMLspeakToken.AT_SIGN: // An array accessor!
+						lexer.next();
+						key = __parseExpression();
+					break;
+					case GMLspeakToken.DOLLAR_SIGN:
+						lexer.next();
+						key = __parseExpression();
+					break;
+					case GMLspeakToken.QUESTION_MARK_SIGN:
+						lexer.next();
+						key = __parseExpression();
+						symbolUsed = true;
+					break;
+					case GMLspeakToken.VERTICAL_BAR:
+						lexer.next();
+						key = __parseExpression();
+						symbolUsed = true;
+					break;
+					case GMLspeakToken.HASH_SIGN:
+						lexer.next();
+						key = [];
+						array_push(__parseExpression());
+						if (lexer.next() == CatspeakToken.COMMA) {
+							lexer.next();	
+						}
+						array_push(__parseExpression());
+						symbolUsed = true;
+					break;
+				}
                 if (lexer.next() != CatspeakToken.BOX_RIGHT) {
                     __ex("expected closing ']' after accessor expression");
                 }
-				if (peeked == CatspeakToken.BOX_LEFT) {
-					result = ir.createAccessor(collection, key, lexer.getLocation());
+				
+				if (!symbolUsed) {
+					result = ir.createAccessor(collection, key, lexer.getLocation()); 
 				} else {
-						
+					switch(symbol) {
+						case GMLspeakToken.QUESTION_MARK_SIGN:
+							result = __parseAssignAccessor(ir.createGet("$$__MAP_ACCESSOR__$$"), collection, key);
+						break;
+						case GMLspeakToken.VERTICAL_BAR:
+							result = __parseAssignAccessor(ir.createGet("$$__LIST_ACCESSOR__$$"), collection, key);
+						break;
+						case GMLspeakToken.HASH_SIGN:
+							result = __parseAssignAccessor(ir.createGet("$$__GRID_ACCESSOR__$$"), collection, key);
+						break;
+					}
 				}
             } else if (peeked == CatspeakToken.DOT) {
                 // dot accessor syntax
@@ -747,10 +968,6 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         } else if (peeked == CatspeakToken.SELF) {
             lexer.next();
             return ir.createSelf(lexer.getLocation());
-        } 
-		else if (peeked == GMLspeakToken.OTHER) {
-            lexer.next();
-            return ir.createOther(lexer.getLocation());
         } else {
             return __parseGrouping();
         }

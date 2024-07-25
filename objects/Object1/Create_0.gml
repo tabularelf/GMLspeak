@@ -5,6 +5,7 @@ show_debug_message((get_timer() - _t) / 1000);
 
 var _t = get_timer();
 gmlspeak = new GMLspeakEnvironment();
+gmlspeak.enableWritingRoom(true);
 show_debug_message((get_timer() - _t) / 1000);
 
 gmlspeak.interface.exposeFunction("string", string);
@@ -167,6 +168,7 @@ testSwitch = function(result) {
 		case 1: show_debug_message("BBB");
 		case 2: show_debug_message("Do I show?");
 		case 3: return "switch/case: foo";
+		case "Hi": show_debug_message("I am a string!"); break;
 		default: return "hi";
 	}
 }
@@ -179,6 +181,7 @@ show_debug_message("Result: " + string(testSwitch(1)));
 show_debug_message("Result: " + string(testSwitch(2)));
 show_debug_message("Result: " + string(testSwitch(3)));
 show_debug_message("Result: " + string(testSwitch(4)));
+show_debug_message("Result: " + string(testSwitch("Hi")));
 
 show_debug_message("For loop tests");
 
@@ -295,3 +298,65 @@ var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 gmlspeak.sharedGlobal.foo = "bar";
 catspeak_execute_ext(program, self);
 //show_debug_message(variable_struct_get_names(results[1]));
+self.programGMLspeak = programGMLspeak;
+gmlspeak.interface.exposeAsset("Room2");
+randomize();
+
+show_debug_message("Map/list accessor test");
+gmlspeak.interface.exposeFunction("irandom", irandom);
+gmlspeak.interface.exposeFunction("ds_map_create", ds_map_create);
+gmlspeak.interface.exposeFunction("ds_list_create", ds_list_create);
+gmlspeak.interface.exposeFunction("ds_grid_create", ds_grid_create);
+
+var _code = @'
+	global.map = ds_map_create();
+	var key = "bar";
+	global.map[? key] ??= 32;
+	global.map[? key] *= 32;
+	return global.map[? key];
+';
+var ast = gmlspeak.parseString(_code);
+var program = gmlspeak.compileGML(ast);
+show_debug_message(program());
+
+
+// TODO::Works but also jank solution involved
+
+
+var code = @'
+	global.list = ds_list_create();
+	var key = 4;
+	global.list[| 4] = 128;
+	global.list[| 4] *= 128;
+	return global.list[| key];
+';
+var program = gmlspeak.compileGML(gmlspeak.parseString(code));
+show_debug_message(program());
+
+// Grid
+var code = @'
+	global.grid = ds_grid_create(8, 8);
+	global.grid[# 2, 2] = 128;
+	global.grid[# 2, 2] *= 128;
+	return global.grid[# 2, 2];
+';
+var program = gmlspeak.compileGML(gmlspeak.parseString(code));
+show_debug_message(program());
+
+show_debug_message("Alarm test");
+gmlspeak.enableWritingRoom(false);
+var _code = @'
+	alarm[0] = 4;
+	alarm[0] *= 60;
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(catspeak_execute(program));
+show_debug_message(alarm[0]);
+
+var _code = @'
+	return room;
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(room_get_name(program()));

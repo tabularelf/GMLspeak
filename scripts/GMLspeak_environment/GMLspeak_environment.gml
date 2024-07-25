@@ -3,29 +3,43 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
 	enableSharedGlobal(true);
+	enableWritingRoom(false);
 	
-	//self.codegenType = GMLspeakGMLCompiler;
-	//useGMLGlobal(false);
-	//
-	//static __parentCompile = compile;
-	//
-	//static compile = function(ir) {
-	//	var result = __parentCompile(ir);
-	//	
-	//	return method({program:  result, args: [], global_: sharedGlobalStruct}, __gmlspeak_program__);
-	//}
-	//
-	//static compileGML = compile;
-	//
-	//static useGMLGlobal = function(value) {
-	//	if (value) {
-	//		sharedGlobalStruct =  (method(global, function() {return self;}))();
-	//		interface.exposeConstant("global", sharedGlobalStruct);
-	//	} else {
-	//		sharedGlobalStruct = sharedGlobal ?? {};
-	//		interface.exposeConstant("global", sharedGlobalStruct);	
-	//	}
-	//}
+	static enableWritingRoom = function(_value) {
+		if (_value) {
+			addKeyword( 
+				"room",				GMLspeakToken.ROOM,
+			);
+			
+			interface.addBanList("room");
+		} else {
+			removeKeyword(
+				"room"
+			);
+			
+			interface.addPardonList("room");
+		}
+		
+		return self;
+	}
+	
+	static enableWritingKeyboardString = function(_value) {
+		if (_value) {
+			addKeyword( 
+				"keyboard_string",	GMLspeakToken.KEYBOARD_STRING
+			);
+			
+			interface.addBanList("keyboard_string");
+		} else {
+			removeKeyword(
+				"keyboard_string"
+			);
+			
+			interface.addPardonList("keyboard_string");
+		}
+		
+		return self;
+	}
 	
 	#region Keywords
 	renameKeyword(
@@ -75,10 +89,9 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"^",				CatspeakToken.BITWISE_XOR,
 		"|",				CatspeakToken.BITWISE_OR,
 		"self",				CatspeakToken.SELF,
-		//"other",			GMLspeakToken.OTHER,
 		
 		// Implemented as comments since these kind of act like two separate comments.
-		// What could go wrong? *foreshadows*
+		// What could go wrong? 
 		"#region",			CatspeakToken.COMMENT,
 		"#endregion",		CatspeakToken.COMMENT,
 		"div",				CatspeakToken.DIVIDE_INT,
@@ -103,15 +116,23 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"*/",				GMLspeakToken.COMMENT_LONG_END,
 		"??",				GMLspeakToken.NULLISH,
 		"??=",				GMLspeakToken.NULLISH_ASSIGN,
-		"?",				GMLspeakToken.CONDITIONAL_OPERATOR,
+		"?",				GMLspeakToken.QUESTION_MARK_SIGN,
+		"@",				GMLspeakToken.AT_SIGN,
+		"$",				GMLspeakToken.DOLLAR_SIGN,
+		"|",				GMLspeakToken.VERTICAL_BAR,
+		"alarm",			GMLspeakToken.ALARM,
 	);
 	
 	interface.exposeDynamicConstant(
 		"other", function() {
 			return global.__catspeakGmlOther ?? sharedGlobal;	
 		},
-		"$$__KEYBOARD_STRING_GETTER__$$", 
-		function() {
+		
+		// Exists as getters only
+		"room", function() {
+			return room;	
+		},
+		"keyboard_string", function() {
 			return keyboard_string;	
 		}
 	);
@@ -124,7 +145,55 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"$$__IS_NOT_NULLISH__$$", 
 		function(value) {
 			return (value != undefined) && (value != pointer_null);	
-		}
+		},
+		"$$__KEYBOARD_STRING__$$", 
+		function(_value = undefined) {
+			if (_value == undefined) {
+				return keyboard_string;
+			}
+			
+			keyboard_string = _value;
+		},
+		"$$__ROOM__$$", 
+		function(_value = undefined) {
+			if (_value == undefined) {
+				return room;	
+			}
+			
+			room = _value;
+		},
+		"$$__MAP_ACCESSOR__$$",
+		function(collection, key) {
+			if (argument_count == 2) {
+				return collection[? key];	
+			}
+			
+			collection[? key] = argument[2];
+		},
+		"$$__LIST_ACCESSOR__$$",
+		function(collection, key) {
+			if (argument_count == 2) {
+				return collection[| key];	
+			}
+			
+			collection[| key] = argument[2];
+		},
+		"$$__GRID_ACCESSOR__$$",
+		function(collection, key1, key2) {
+			if (argument_count == 3) {
+				return collection[# key1, key2];	
+			}
+			
+			collection[# key1, key2] = argument[3];
+		},
+		"$$__ALARM_ACCESSOR__$$",
+		method(undefined, function(key) {
+			if (argument_count == 1) {
+				return alarm[key];	
+			}
+			
+			alarm[key] = argument[1];	
+		})
 	);
 	#endregion
 	
