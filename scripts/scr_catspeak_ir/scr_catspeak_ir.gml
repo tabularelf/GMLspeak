@@ -583,20 +583,6 @@ function CatspeakIRBuilder() constructor {
         // __createTerm() will do argument validation
         return __createTerm(CatspeakTerm.SELF, location, { });
     };
-	
-	/// Creates an instruction for accessing the caller `self`.
-    ///
-    /// @experimental 
-    ///
-    /// @param {Real} [location]
-    ///   The source location of this term.
-    ///
-    /// @return {Struct}
-    static createOther = function (location=undefined) {
-        // __createTerm() will do argument validation
-        return __createTerm(CatspeakTerm.OTHER, location, { });
-    };
-
 
     /// Attempts to assign a right-hand-side value to a left-hand-side target.
     ///
@@ -996,7 +982,6 @@ enum CatspeakTerm {
     GLOBAL,
     FUNCTION,
     SELF,
-	OTHER,
 	PARAMS,
     /// @ignore
     __SIZE__
