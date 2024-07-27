@@ -2,9 +2,10 @@
 function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
+	self.currentFilename = "unknown";
 	enableSharedGlobal(true);
 	enableWritingRoom(false);
-	
+
 	static enableWritingRoom = function(_value) {
 		if (_value) {
 			addKeyword( 
@@ -38,6 +39,14 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			interface.addPardonList("keyboard_string");
 		}
 		
+		return self;
+	}
+
+	static assignFilename = function(_value) {
+		if (!is_string(_value)) && (!is_undefined(_value)) {
+			_value = string(_value);	
+		}
+		currentFilename = _value ?? "unknown";
 		return self;
 	}
 	
@@ -121,6 +130,9 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"$",				GMLspeakToken.DOLLAR_SIGN,
 		"|",				GMLspeakToken.VERTICAL_BAR,
 		"alarm",			GMLspeakToken.ALARM,
+		"_GMLINE_",			GMLspeakToken.__GMLINE__,
+		"_GMFILE_",			GMLspeakToken.__GMFILE__,
+		"_GMFUNCTION_",		GMLspeakToken.__GMFUNCTION__,
 	);
 	
 	interface.exposeDynamicConstant(
@@ -147,20 +159,20 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			return (value != undefined) && (value != pointer_null);	
 		},
 		"$$__KEYBOARD_STRING__$$", 
-		function(_value = undefined) {
-			if (_value == undefined) {
+		function() {
+			if (argument_count == 0) {
 				return keyboard_string;
 			}
 			
-			keyboard_string = _value;
+			keyboard_string = argument[0];
 		},
 		"$$__ROOM__$$", 
-		function(_value = undefined) {
-			if (_value == undefined) {
+		function() {
+			if (argument_count == 0) {
 				return room;	
 			}
 			
-			room = _value;
+			room = argument[0];
 		},
 		"$$__MAP_ACCESSOR__$$",
 		function(collection, key) {
@@ -256,7 +268,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"keyboard_key", function() {return keyboard_key;},
 		"keyboard_lastkey", function() {return keyboard_lastkey;},
 		"keyboard_lastchar", function() {return keyboard_lastchar;},
-		"keyboard_string", function() {return keyboard_string;},
 		
 	);
 	
@@ -578,6 +589,19 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	);
 	#endregion
 	
+	#region File Attributes
+	
+	interface.exposeConstant( 
+		"fa_readonly",	fa_readonly,
+		"fa_hidden",	fa_hidden,	
+		"fa_sysfile",	fa_sysfile,	
+		"fa_volumeid",	fa_volumeid,
+		"fa_directory",	fa_directory,	
+		"fa_archive",	fa_archive
+	);
+	
+	#endregion
+	
 	#region Nineslice
 	interface.exposeConstant( 
 		"nineslice_left",       nineslice_left,
@@ -684,7 +708,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	);
 	
 	interface.exposeDynamicConstant( 
-		"room", function() {return room;},
 		"room_width", function() {return room_width;},
 		"room_height", function() {return room_width;},
 	);
@@ -1228,8 +1251,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	
 	#region Sandbox value 
 	try {
-		interface.exposeConstant( 
-			"GM_is_sandboxed",		GM_is_sandboxed
+		interface.exposeDynamicConstant( 
+			"GM_is_sandboxed",		function() {return GM_is_sandboxed;}
 		);
 	} catch(_) {
 		__gmlspeak_log("GM_is_sandboxed not available! Skipping...");	
@@ -1287,7 +1310,103 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	} catch(_) {
 		__gmlspeak_log("New gamepad constants not available! Skipping...");		
 	}
+	#endregion
 	
+	#region Flexpanels
+	
+	try {
+		var _flexpanelUnit = {
+			"point":			flexpanel_unit.point,	
+			"percent":			flexpanel_unit.percent,	
+			"auto":				flexpanel_unit.auto
+		};
+		
+		var _flexpanelPositionType = {
+			// GameMaker restricting static smh
+			//"static":			flexpanel_position_type.static,	
+			"relative":			flexpanel_position_type.relative,	
+			"absolute":			flexpanel_position_type.absolute
+		};
+		
+		var _flexpanelJustify = {
+			"start":			flexpanel_justify.start,	
+			"center":			flexpanel_justify.center,	
+			"flex_end":			flexpanel_justify.flex_end,	
+			"space_between":	flexpanel_justify.space_between,	
+			"space_around":		flexpanel_justify.space_around,	
+			"space_evenly":		flexpanel_justify.space_evenly,	
+		};
+		
+		var _flexpanelDirection = {
+			"inherit":			flexpanel_direction.inherit,
+			"LTR":				flexpanel_direction.LTR,
+			"RTL":				flexpanel_direction.RTL,
+		};
+		
+		var _flexPanelGutter = {
+			"column":			flexpanel_gutter.column,
+			"row":				flexpanel_gutter.row,
+			"all_gutters":		flexpanel_gutter.all_gutters,
+		};
+		
+		var _flexpanelDisplay = {
+			"flex":				flexpanel_display.flex,
+			"none":				flexpanel_display.none
+		};
+		
+		var _flexpanelFlexDirection = {
+			"column":			flexpanel_flex_direction.column,
+			"column_reverse":	flexpanel_flex_direction.column_reverse,
+			"row":				flexpanel_flex_direction.row,
+			"row_reverse":		flexpanel_flex_direction.row_reverse,
+		};
+		
+		var _flexpanelAlign = {
+			"auto":				flexpanel_align.auto,
+			"flex_start":		flexpanel_align.flex_start,
+			"center":			flexpanel_align.center,
+			"flex_end":			flexpanel_align.flex_end,
+			"stretch":			flexpanel_align.stretch,
+			"baseline":			flexpanel_align.baseline,
+			"space_between":	flexpanel_align.space_between,
+			"space_around":		flexpanel_align.space_around,
+			"space_evenly":		flexpanel_align.space_evenly,
+		};
+		
+		var _flexpanelWrap = {
+			"no_wrap":			flexpanel_wrap.no_wrap,
+			"wrap":				flexpanel_wrap.wrap,
+			"reverse":			flexpanel_wrap.reverse
+		};
+		
+		var _flexpanelEdge = {
+			"left":				flexpanel_edge.left,
+			"top":				flexpanel_edge.top,
+			"right":			flexpanel_edge.right,
+			"bottom":			flexpanel_edge.bottom,
+			"start":			flexpanel_edge.start,
+			// GameMaker restricting end smh
+			//"end":				flexpanel_edge.end,
+			"horizontal":		flexpanel_edge.horizontal,
+			"vertical":			flexpanel_edge.vertical,
+			"all_edges":		flexpanel_edge.all_edges,
+		};
+		
+		interface.exposeConstant(
+			"flexpanel_unit",			_flexpanelUnit,
+			"flexpanel_position_type",	_flexpanelPositionType,
+			"flexpanel_justify",		_flexpanelJustify,
+			"flexpanel_direction",		_flexpanelDirection,
+			"flexpanel_gutter",			_flexPanelGutter,
+			"flexpanel_display",		_flexpanelDisplay,
+			"flexpanel_flex_direction",	_flexpanelFlexDirection,
+			"flexpanel_align",			_flexpanelAlign,
+			"flexpanel_wrap",			_flexpanelWrap,
+			"flexpanel_edge",			_flexpanelEdge
+		);
+	} catch(_) {
+		__gmlspeak_log("Flexpanel constants not available! Skipping...");	
+	}
 	#endregion
 	#endregion
 	#endregion

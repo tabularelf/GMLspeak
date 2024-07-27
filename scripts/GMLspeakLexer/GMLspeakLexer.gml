@@ -195,6 +195,9 @@ enum GMLspeakToken {
 	HASH_SIGN,
 	QUESTION_MARK_SIGN,
 	VERTICAL_BAR,
+	__GMLINE__,
+	__GMFILE__,
+	__GMFUNCTION__,
     /// @ignore
     __SIZE__
 }

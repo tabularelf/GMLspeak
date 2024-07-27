@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "gmlspeak_parser",
+  "name": "GMLspeakParser",
   "isDnD": false,
   "isCompatibility": false,
   "parent": {

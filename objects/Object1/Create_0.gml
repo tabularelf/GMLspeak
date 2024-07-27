@@ -350,13 +350,54 @@ var _code = @'
 	alarm[0] *= 60;
 ';
 
+
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(catspeak_execute(program));
 show_debug_message(alarm[0]);
 
 var _code = @'
+	global.grid[# 1, 1] = ds_map_create();
+	global.grid[# 1, 1][? "bar"] = irandom(32);
 	return room;
 ';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(room_get_name(program()));
+
+
+show_debug_message("_GMLINE_ test");
+var _code = @'show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+show_debug_message("This is on line " + string(_GMLINE_));
+func = function() {
+	show_debug_message("This is on line " + string(_GMLINE_) + " from " + string(_GMFUNCTION_) + " in " + string(_GMFILE_));
+}
+show_debug_message("This is from " + string(_GMFUNCTION_) + " in " + string(_GMFILE_));
+show_debug_message("Is this a template string? {func}");
+';
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+program();
+
+show_debug_message("Removed Catspeak function shortcut");
+var _code = @'
+	func = function {
+		foo = "bar";
+	}
+';
+
+try {
+	var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+	program();	
+	show_debug_message("Failure!");
+} catch(_) {
+	show_debug_message("OK! " + string(_.message));	
+}
+
+gmlspeak.sharedGlobal.func();

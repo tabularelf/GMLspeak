@@ -32,9 +32,12 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     self.ir = builder;
 	
 	self.interface = interface;
+	self.owner = other;
     /// @ignore
     self.finalised = false;
+	self.functionNames = [];
     builder.pushFunction();
+	__pushFunctionName();
 
     /// Parses a top-level Catspeak statement from the supplied lexer, adding
     /// any relevant parse information to the supplied IR.
@@ -58,6 +61,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         if (lexer.peek() == CatspeakToken.EOF) {
             if (!finalised) {
                 ir.popFunction();
+				__popFunctionName();
                 finalised = true;
             }
             return false;
@@ -70,6 +74,17 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         __parseStatement();
         return true;
     };
+
+	static __pushFunctionName = function(_line) {
+		var location_ = lexer.getLocation();
+		array_push(functionNames, 
+			"GMLspeak_" + owner.currentFilename + "@anon@" + string(catspeak_location_get_row(location_)) + ":" + 
+			string(catspeak_location_get_column(location_)));
+	}
+	
+	static __popFunctionName = function() {
+		return array_pop(functionNames);	
+	}
 
     /// @ignore
     static __parseStatement = function () {
@@ -251,24 +266,27 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         } else if (peeked == CatspeakToken.FUN) {
             lexer.next();
             ir.pushFunction();
-            if (lexer.peek() != CatspeakToken.BRACE_LEFT) {
-                if (lexer.next() != CatspeakToken.PAREN_LEFT) {
-                    __ex("expected opening '(' after 'fun' keyword");
+			__pushFunctionName(lexer.getLocation());
+            if (lexer.peek() != CatspeakToken.PAREN_LEFT) {
+                __ex("expected opening '(' after 'fun' keyword");
+            }
+			lexer.next();
+            while (__isNot(CatspeakToken.PAREN_RIGHT)) {
+                if (lexer.next() != CatspeakToken.IDENT) {
+                    __ex("expected identifier in function arguments");
                 }
-                while (__isNot(CatspeakToken.PAREN_RIGHT)) {
-                    if (lexer.next() != CatspeakToken.IDENT) {
-                        __ex("expected identifier in function arguments");
-                    }
-                    ir.allocArg(lexer.getValue(), lexer.getLocation());
-                    if (lexer.peek() == CatspeakToken.COMMA) {
-                        lexer.next();
-                    }
-                }
-                if (lexer.next() != CatspeakToken.PAREN_RIGHT) {
-                    __ex("expected closing ')' after function arguments");
+                ir.allocArg(lexer.getValue(), lexer.getLocation());
+                if (lexer.peek() == CatspeakToken.COMMA) {
+                    lexer.next();
                 }
             }
+            if (lexer.next() != CatspeakToken.PAREN_RIGHT) {
+                __ex("expected closing ')' after function arguments");
+            }
+			
+			
             __parseStatements("fun");
+			__popFunctionName();
             return ir.createCall(ir.createGet("method"), [ir.createSelf(), ir.popFunction()]);
         } else {
             return __parseAssign();
@@ -690,12 +708,12 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 		} else if (peeked == GMLspeakToken.ALARM) {
 			lexer.next();
 			if (lexer.peek() != CatspeakToken.BOX_LEFT) {
-				__ex("Bad");	
+				__ex("expected opening '[' after 'alarm'");
 			}
 			lexer.next();
 			var key = __parseExpression();
 			if (lexer.next() != CatspeakToken.BOX_RIGHT) {
-				__ex("Bad");	
+				__ex("expected closing ']' after 'alarm' index");	
 			}
 			var result = __parseAssignAlarm(key);
 			return result;
@@ -709,7 +727,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     /// @return {Array}
     static __parseMatchArms = function () {
 		if (lexer.next() != CatspeakToken.BRACE_LEFT) {
-			__ex("expected opening '{' before 'match' arms");
+			__ex("expected opening '{' before 'switch' cases");
 		}
 		var conditions = [];
 		var statements = undefined;
@@ -815,31 +833,13 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     /// @return {Struct}
     static __parseIndex = function () {
         var callNew = lexer.peek() == CatspeakToken.NEW;
+		var templateSymbolUsed = false;
         if (callNew) {
             lexer.next();
         }
-		// Parse any possible symbols
-		var initialSymbol = undefined;
-		//if (lexer.peek() == GMLspeakToken.AT_SIGN) {
-		//	lexer.next();
-		//	show_debug_message("a");
-		//}
-		switch(lexer.peek()) {
-			case GMLspeakToken.AT_SIGN: lexer.next(); break;
-			case GMLspeakToken.DOLLAR_SIGN: 
-				//initialSymbol = GMLspeakToken.DOLLAR_SIGN; 
-				lexer.next();
-			break;
-			case GMLspeakToken.QUESTION_MARK_SIGN: 
-				initialSymbol = GMLspeakToken.QUESTION_MARK_SIGN; 
-				lexer.next();
-			break;
-			case GMLspeakToken.HASH_SIGN: 
-				initialSymbol = GMLspeakToken.HASH_SIGN; 
-				lexer.next();
-			break;
-		}
+		
         var result = __parseTerminal();
+	
         while (true) {
             var peeked = lexer.peek();
             if (peeked == CatspeakToken.PAREN_LEFT) {
@@ -866,8 +866,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             } else if (peeked == CatspeakToken.BOX_LEFT) {
                 // accessor syntax
 				lexer.next()
-                var symbol = initialSymbol ?? lexer.peek();
-				initialSymbol = undefined;
+                var symbol = lexer.peek();
                 var collection = result;
 				var key;
 				var symbolUsed = false;
@@ -878,7 +877,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 							key = [];
 							array_push(key, __parseExpression());
 							if (lexer.next() != CatspeakToken.COMMA) {
-								__ex("bad");	
+								__ex("expected opening ',' after '[#' index");
 							}
 							array_push(key, __parseExpression());
 							symbolUsed = true;
@@ -952,7 +951,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         }
         return result;
     };
-
+	
     /// @ignore
     ///
     /// @return {Struct}
@@ -968,7 +967,16 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         } else if (peeked == CatspeakToken.SELF) {
             lexer.next();
             return ir.createSelf(lexer.getLocation());
-        } else {
+        } else if (peeked == GMLspeakToken.__GMLINE__) {
+			lexer.next();
+			return ir.createValue(catspeak_location_get_row(lexer.getLocation()), lexer.getLocation())
+		} else if (peeked == GMLspeakToken.__GMFILE__) { 
+			lexer.next();
+			return ir.createValue("GMLspeak_" + owner.currentFilename, lexer.getLocation())
+		} else if (peeked == GMLspeakToken.__GMFUNCTION__) {
+			lexer.next();
+			return ir.createValue(functionNames[array_length(functionNames)-1], lexer.getLocation())
+		} else {
             return __parseGrouping();
         }
     };
