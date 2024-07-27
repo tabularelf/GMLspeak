@@ -744,16 +744,16 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			var prefix = lexer.next();
 			if (prefix == GMLspeakToken.DEFAULT) {
 				value = undefined;	
-				if (lexer.peek() == CatspeakToken.COLON) {
-					lexer.next();	
+				if (lexer.peek() != CatspeakToken.COLON) {
+					__ex("expected '"+lexer.getLexeme()+"' after 'case' expression or constant");
 				}
+				lexer.next();	
 			} else {
-				lexer.peek();
-				value =	ir.createValue(lexer.getValue(), lexer.getLocation());//__parseExpression();//
-				lexer.next();
-				if (lexer.peek() == CatspeakToken.COLON) {
-					lexer.next();	
+				value =	__parseExpression();
+				if (lexer.peek() != CatspeakToken.COLON) {
+					__ex("expected '"+lexer.getLexeme()+"' after 'case' expression or constant");	
 				}
+				lexer.next();	
 				// Multistack case
 				if (lexer.peek() == GMLspeakToken.CASE) {
 					statements = [value];

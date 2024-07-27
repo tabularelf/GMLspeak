@@ -397,7 +397,7 @@ try {
 	program();	
 	show_debug_message("Failure!");
 } catch(_) {
-	show_debug_message("OK! " + string(_.message));	
+	show_debug_message("OK!");	
 }
 
 gmlspeak.sharedGlobal.func();
