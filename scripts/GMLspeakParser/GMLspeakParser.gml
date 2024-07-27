@@ -705,18 +705,6 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 		} else if (peeked == GMLspeakToken.ROOM) {
 			lexer.next();
 			return ir.createProperty(ir.createGet("$$__ROOM__$$"), lexer.getLocation());
-		} else if (peeked == GMLspeakToken.ALARM) {
-			lexer.next();
-			if (lexer.peek() != CatspeakToken.BOX_LEFT) {
-				__ex("expected opening '[' after 'alarm'");
-			}
-			lexer.next();
-			var key = __parseExpression();
-			if (lexer.next() != CatspeakToken.BOX_RIGHT) {
-				__ex("expected closing ']' after 'alarm' index");	
-			}
-			var result = __parseAssignAlarm(key);
-			return result;
 		} else {
             return __parseIndex();
         }
@@ -962,6 +950,17 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             return ir.createValue(lexer.getValue(), lexer.getLocation());
         } else if (peeked == CatspeakToken.IDENT) {
             lexer.next();
+			if (lexer.getLexeme() == "alarm") {
+				if (lexer.peek() == CatspeakToken.BOX_LEFT) {
+					lexer.next();
+					var key = __parseExpression();
+					if (lexer.next() != CatspeakToken.BOX_RIGHT) {
+						__ex("expected closing ']' after 'alarm' index");	
+					}
+					
+					return __parseAssignAlarm(key);
+				}
+			}
 			return __parseAsSelf(ir.createGet(lexer.getValue(), lexer.getLocation()));	
 
         } else if (peeked == CatspeakToken.SELF) {

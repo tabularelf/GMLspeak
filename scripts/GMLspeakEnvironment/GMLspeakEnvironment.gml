@@ -129,7 +129,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"@",				GMLspeakToken.AT_SIGN,
 		"$",				GMLspeakToken.DOLLAR_SIGN,
 		"|",				GMLspeakToken.VERTICAL_BAR,
-		"alarm",			GMLspeakToken.ALARM,
 		"_GMLINE_",			GMLspeakToken.__GMLINE__,
 		"_GMFILE_",			GMLspeakToken.__GMFILE__,
 		"_GMFUNCTION_",		GMLspeakToken.__GMFUNCTION__,

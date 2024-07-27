@@ -381,6 +381,12 @@ func = function() {
 }
 show_debug_message("This is from " + string(_GMFUNCTION_) + " in " + string(_GMFILE_));
 show_debug_message("Is this a template string? {func}");
+
+var foo = {
+	alarm: [],
+};
+foo.alarm[0] = 16;
+show_debug_message(foo.alarm[0]);
 ';
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
