@@ -171,8 +171,12 @@ enum CatspeakToken {
     ///   raise an exception. This likely indicates that a Catspeak script has
     ///   a syntax error somewhere.
     OTHER = 64,
+    /// The `params_count` keyword.
+    ///
+    /// @experimental
+    PARAMS_COUNT = 65,
     /// @ignore
-    __SIZE__ = 65,
+    __SIZE__ = 66,
 }
 
 /// @ignore

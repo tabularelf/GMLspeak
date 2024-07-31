@@ -3,6 +3,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
 	self.currentFilename = "unknown";
+	self.canWriteRoomProperties = false;
 	enableSharedGlobal(true);
 	enableWritingRoom(false);
 
@@ -24,19 +25,70 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		return self;
 	}
 	
-	static enableWritingKeyboardString = function(_value) {
+	static enableWritingRoomProperties = function(_value) {
 		if (_value) {
 			addKeyword( 
-				"keyboard_string",	GMLspeakToken.KEYBOARD_STRING
+				"room_width",				GMLspeakToken.ROOM_WIDTH,
+				"room_height",				GMLspeakToken.ROOM_HEIGHT,
+				"room_persistent",			GMLspeakToken.ROOM_PERSISTENT,
 			);
 			
-			interface.addBanList("keyboard_string");
+			interface.addBanList("room_width", "room_height", "room_persistent");
 		} else {
 			removeKeyword(
-				"keyboard_string"
+				"room_width",	
+				"room_height",	
+				"room_persistent",
+			);
+			interface.addPardonList(
+				"room_width", 
+				"room_height", 
+				"room_persistent"
+			);
+		}
+		
+		canWriteRoomProperties = _value;
+		
+		return self;
+	}
+	
+	static enableWritingIOProperties = function(_value) {
+		if (_value) {
+			addKeyword( 
+				"keyboard_string",		GMLspeakToken.KEYBOARD_STRING,
+				"keyboard_key",			GMLspeakToken.KEYBOARD_KEY,
+				"keyboard_lastchar",	GMLspeakToken.KEYBOARD_LASTCHAR,
+				"keyboard_lastkey",		GMLspeakToken.KEYBOARD_LASTKEY,
+				"mouse_lastbutton",		GMLspeakToken.MOUSE_LASTBUTTON,
+				"cursor_sprite",		GMLspeakToken.CURSOR_SPRITE,
 			);
 			
-			interface.addPardonList("keyboard_string");
+			interface.addBanList(
+				"keyboard_string",
+				"keyboard_key",
+				"keyboard_lastchar",
+				"keyboard_lastkey",
+				"mouse_lastbutton",
+				"cursor_sprite",
+			);
+		} else {
+			removeKeyword(
+				"keyboard_string",
+				"keyboard_key",
+				"keyboard_lastchar",
+				"keyboard_lastkey",
+				"mouse_lastbutton",
+				"cursor_sprite",
+			);
+			
+			interface.addPardonList(
+				"keyboard_string",
+				"keyboard_key",
+				"keyboard_lastchar",
+				"keyboard_lastkey",
+				"mouse_lastbutton",
+				"cursor_sprite",
+			);
 		}
 		
 		return self;
@@ -132,6 +184,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"_GMLINE_",			GMLspeakToken.__GMLINE__,
 		"_GMFILE_",			GMLspeakToken.__GMFILE__,
 		"_GMFUNCTION_",		GMLspeakToken.__GMFUNCTION__,
+		"argument",			CatspeakToken.PARAMS,
+		"argument_count",	CatspeakToken.PARAMS_COUNT,
 	);
 	
 	interface.exposeDynamicConstant(
@@ -140,22 +194,42 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		},
 		
 		// Exists as getters only
-		"room", function() {
-			return room;	
-		},
-		"keyboard_string", function() {
-			return keyboard_string;	
-		}
+		"room", 
+		function() {return room;},
+		"room_width", 
+		function() {return room_width;},
+		"room_height", 
+		function() {return room_height;},
+		"room_persistent", 
+		function() {return room_persistent;},
+		"keyboard_string", 
+		function() {return keyboard_string;},
 	);
 	
 	interface.exposeConstant("global", sharedGlobal);
 	
-	interface.exposeFunction( 
+	interface.exposeMethod( 
 		"method",
 		__gmlspeak_method__,
 		"$$__IS_NOT_NULLISH__$$", 
 		function(value) {
 			return (value != undefined) && (value != pointer_null);	
+		},
+		"$$__CURSOR_SPRITE__$$", 
+		function() {
+			if (argument_count == 0) {
+				return cursor_sprite;	
+			}
+			
+			cursor_sprite = argument[0];
+		},
+		"$$__MOUSE_LASTBUTTON__$$",
+		function() {
+			if (argument_count == 0) {
+				return mouse_lastbutton;	
+			}
+			
+			mouse_lastbutton = argument[0];
 		},
 		"$$__KEYBOARD_STRING__$$", 
 		function() {
@@ -165,6 +239,30 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			
 			keyboard_string = argument[0];
 		},
+		"$$__KEYBOARD_KEY__$$", 
+		function() {
+			if (argument_count == 0) {
+				return keyboard_key;
+			}
+			
+			keyboard_key = argument[0];
+		},
+		"$$__KEYBOARD_LASTCHAR__$$", 
+		function() {
+			if (argument_count == 0) {
+				return keyboard_lastchar;
+			}
+			
+			keyboard_lastchar = argument[0];
+		},
+		"$$__KEYBOARD_LASTKEY__$$", 
+		function() {
+			if (argument_count == 0) {
+				return keyboard_lastkey;
+			}
+			
+			keyboard_lastkey = argument[0];
+		},
 		"$$__ROOM__$$", 
 		function() {
 			if (argument_count == 0) {
@@ -172,6 +270,101 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			}
 			
 			room = argument[0];
+		},
+		"$$__ROOM_WIDTH__$$", 
+		function() {
+			if (argument_count == 0) {
+				return room_width;	
+			}
+			
+			room_width = argument[0];
+		},
+		"$$__ROOM_HEIGHT__$$", 
+		function() {
+			if (argument_count == 0) {
+				return room_height;	
+			}
+			
+			room_height = argument[0];
+		},
+		"$$__ROOM_PERSISTENT__$$", 
+		function() {
+			if (argument_count == 0) {
+				return room_persistent;	
+			}
+			
+			room_persistent = argument[0];
+		},
+		"$$__VIEW_ENABLED__$$", 
+		function() {
+			if (argument_count == 0) {
+				return view_enabled;	
+			}
+			
+			view_enabled = argument[0];
+		},
+		"$$__VIEW_VISIBLE__$$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_visible[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_visible[key] = argument[1];	
+		},
+		"$$__VIEW_CAMERA__$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_camera[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_camera[key] = argument[1];	
+		},
+		"$$__VIEW_XPORT__$$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_xport[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_xport[key] = argument[1];	
+		},
+		"$$__VIEW_YPORT__$$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_xport[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_xport[key] = argument[1];	
+		},
+		"$$__VIEW_WPORT__$$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_wport[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_wport[key] = argument[1];	
+		},
+		"$$__VIEW_HPORT__$$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_hport[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_hport[key] = argument[1];	
+		},
+		"$$__VIEW_SURFACE_ID__$$",
+		function(key) {
+			if (argument_count == 1) {
+				return view_surface_id[key];	
+			}
+			
+			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
+			view_surface_id[key] = argument[1];	
 		},
 		"$$__MAP_ACCESSOR__$$",
 		function(collection, key) {
@@ -256,6 +449,14 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"current_minute", function() {return current_minute;},
 		"current_second", function() {return current_second;},
 		"instance_count", function() {return instance_count;},
+		"program_directory", function() {return program_directory;},
+		"temp_directory",	function() {return temp_directory;},
+		"working_directory", function() {return working_directory;},
+		"game_save_id",		function() {return game_save_id;},
+		"game_project_name", function() {return game_project_name;},
+		"game_project_name", function() {return game_project_name;},
+		"game_display_name", function() {return game_display_name;},
+		"cursor_sprite",	 function() {return cursor_sprite;}
 	);
 	#endregion
 	
@@ -363,6 +564,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	// Dynamic Constants
 	interface.exposeDynamicConstant(
 		"mouse_button", function() {return mouse_button;},
+		"mouse_lastbutton", function() {return mouse_lastbutton;},
 		"mouse_x", function() {return mouse_x;},
 		"mouse_y", function() {return mouse_y;},
 	);
@@ -702,13 +904,9 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	);
 	
 	interface.exposeDynamicConstant( 
-		"room_first", function() {return room_first;},
-		"room_last", function() {return room_last;},
-	);
-	
-	interface.exposeDynamicConstant( 
-		"room_width", function() {return room_width;},
-		"room_height", function() {return room_width;},
+		"room_first",		function() {return room_first;},
+		"room_last",		function() {return room_last;},
+		"view_current",		function() {return view_current;},
 	);
 	#endregion
 	

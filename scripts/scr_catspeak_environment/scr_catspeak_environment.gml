@@ -573,7 +573,7 @@ function catspeak_execute_ext(
     argc = undefined
 ) {
     var result = undefined;
-    __CATSPEAK_BEGIN_SELF = self_ ?? __selfPrev;
+    __CATSPEAK_BEGIN_SELF = self_;
     with (__selfPrev ?? other) {
         with (method_get_self(callee) ?? self_) {
             if (args == undefined) {

@@ -15,164 +15,6 @@
 ///   - `12.3` (is a `CatspeakToken.VALUE`)
 ///   - `+`    (is a `CatspeakToken.PLUS`)
 enum GMLspeakToken {
-    ///// The `(` character.
-    //PAREN_LEFT,
-    ///// The `)` character.
-    //PAREN_RIGHT,
-    ///// The `[` character.
-    //BOX_LEFT,
-    ///// The `]` character.
-    //BOX_RIGHT,
-    ///// The `{` character.
-    //BRACE_LEFT,
-    ///// The `}` character.
-    //BRACE_RIGHT,
-    ///// The `:` character.
-    //COLON,
-    ///// The `;` character.
-    //SEMICOLON,
-    ///// The `,` character.
-    //COMMA,
-    ///// The `.` operator.
-    //DOT,
-    ///// The `=>` operator.
-    //ARROW,
-    ///// @ignore
-    //__OP_ASSIGN_BEGIN__,
-    ///// The `=` operator.
-    //ASSIGN,
-    ///// The `*=` operator.
-    //ASSIGN_MULTIPLY,
-    ///// The `/=` operator.
-    //ASSIGN_DIVIDE,
-    ///// The `-=` operator.
-    //ASSIGN_SUBTRACT,
-    ///// The `+=` operator.
-    //ASSIGN_PLUS,
-    ///// @ignore
-    //__OP_BEGIN__,
-    ///// The remainder `%` operator.
-    //REMAINDER,
-    ///// The `*` operator.
-    //MULTIPLY,
-    ///// The `/` operator.
-    //DIVIDE,
-    ///// The integer division `//` operator.
-    //DIVIDE_INT,
-    ///// The `-` operator.
-    //SUBTRACT,
-    ///// The `+` operator.
-    //PLUS,
-    ///// The relational `==` operator.
-    //EQUAL,
-    ///// The relational `!=` operator.
-    //NOT_EQUAL,
-    ///// The relational `>` operator.
-    //GREATER,
-    ///// The relational `>=` operator.
-    //GREATER_EQUAL,
-    ///// The relational `<` operator.
-    //LESS,
-    ///// The relational `<=` operator.
-    //LESS_EQUAL,
-    ///// The logical negation `!` operator.
-    //NOT,
-    ///// The bitwise negation `~` operator.
-    //BITWISE_NOT,
-    ///// The bitwise right shift `>>` operator.
-    //SHIFT_RIGHT,
-    ///// The bitwise left shift `<<` operator.
-    //SHIFT_LEFT,
-    ///// The bitwise and `&` operator.
-    //BITWISE_AND,
-    ///// The bitwise xor `^` operator.
-    //BITWISE_XOR,
-    ///// The bitwise or `|` operator.
-    //BITWISE_OR,
-    ///// The logical `and` operator.
-    //AND,
-    ///// The logical `or` operator.
-    //OR,
-    ///// The logical `xor` operator.
-    //XOR,
-    ///// The functional pipe right `|>` operator.
-    //PIPE_RIGHT,
-    ///// The functional pipe left `<|` operator.
-    //PIPE_LEFT,
-    ///// The `do` keyword.
-    //DO,
-    ///// The `if` keyword.
-    //IF,
-    ///// The `else` keyword.
-    //ELSE,
-    ///// The `while` keyword.
-    //WHILE,
-    ///// The `for` keyword.
-    /////
-    ///// @experimental
-    //FOR,
-    ///// The `LOOP` keyword.
-    /////
-    ///// @experimental
-    //LOOP,
-    ///// The `match` keyword.
-    /////
-    ///// @experimental
-    //MATCH,
-	///// The `switch` keyword.
-    /////
-    ///// @experimental
-    ////SWITCH,
-	////CASE,
-    ///// The `let` keyword.
-	//USE,
-    //LET,
-    ///// The `fun` keyword.
-    //FUN,
-    ///// The `break` keyword.
-    //BREAK,
-    ///// The `continue` keyword.
-    //CONTINUE,
-    ///// The `return` keyword.
-    //RETURN,
-    ///// The `new` keyword.
-    //NEW,
-    ///// The `impl` keyword.
-    /////
-    ///// @experimental
-    //IMPL,
-    ///// The `self` keyword.
-    /////
-    ///// @experimental
-    //SELF,
-    ///// The `params` keyword.
-    /////
-    ///// @experimental
-    //PARAMS,
-    ///// Represents a variable name.
-    //IDENT,
-    ///// Represents a GML value. This could be one of:
-    /////  - string literal:    `"hello world"`
-    /////  - verbatim literal:  `@"\(0_0)/ no escapes!"`
-    /////  - integer:           `1`, `2`, `5`
-    /////  - float:             `1.25`, `0.5`
-    /////  - character:         `'A'`, `'0'`, `'\n'`
-    /////  - boolean:           `true` or `false`
-    /////  - `undefined`
-    //VALUE,
-    ///// Represents a sequence of non-breaking whitespace characters.
-    //WHITESPACE,
-    ///// Represents a comment.
-    //COMMENT,
-    ///// Represents the end of the file.
-    //EOF,
-    ///// Represents any other unrecognised character.
-    /////
-    ///// @remark
-    /////   If the compiler encounters a token of this type, it will typical
-    /////   raise an exception. This likely indicates that a Catspeak script has
-    /////   a syntax error somewhere.
-    //OTHER,
 	__CATSPEAK_SIZE__ = CatspeakToken.__SIZE__,
 	REPEAT,
 	FOR,
@@ -183,12 +25,20 @@ enum GMLspeakToken {
 	DEFAULT,
 	COMMENT_LONG,
 	COMMENT_LONG_END,
-	WITH,
 	NULLISH,
 	NULLISH_ASSIGN,
 	OTHER,
 	ROOM,
+	ROOM_WIDTH,
+	ROOM_HEIGHT,
+	ROOM_PERSISTENT,
+	VIEW_ENABLED,
 	KEYBOARD_STRING,
+	KEYBOARD_KEY,
+	KEYBOARD_LASTCHAR,
+	KEYBOARD_LASTKEY,
+	MOUSE_LASTBUTTON,
+	CURSOR_SPRITE,
 	DOLLAR_SIGN,
 	AT_SIGN,
 	HASH_SIGN,

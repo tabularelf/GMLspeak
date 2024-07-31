@@ -107,7 +107,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             } else {
                 valueTerm = ir.createValue(undefined, location);
             }
-            var getter = ir.allocLocal(localName, location);
+            var getter = ir.allocLocalOrReuse(localName, location);
             result = ir.createAssign(
                 CatspeakAssign.VANILLA,
                 getter,
@@ -319,9 +319,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 	/// @ignore
     ///
     /// @return {Struct}
-	static __parseAssignAlarm = function (key) {
+	static __parseAssignGlobalAccessor = function (accessor, key) {
 		var lhs;	
-		var accessorFunction = ir.createGet("$$__ALARM_ACCESSOR__$$");
+		var accessorFunction = accessor;
 		var peeked = lexer.peek();
         if (
             peeked == CatspeakToken.ASSIGN ||
@@ -698,17 +698,71 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         //} else if (peeked == CatspeakToken.COLON) {
         //    // `:property` syntax
         //    lexer.next();
-        //    return __parseExpression();
-        } else if (peeked == GMLspeakToken.KEYBOARD_STRING) {
+        //    return __parseExpression();]
+		// TODO::Implement better system
+        } else if (peeked == CatspeakToken.PARAMS) {
 			lexer.next();
-			return ir.createProperty(ir.createGet("$$__KEYBOARD_STRING__$$"), lexer.getLocation());
-		} else if (peeked == GMLspeakToken.ROOM) {
-			lexer.next();
-			return ir.createProperty(ir.createGet("$$__ROOM__$$"), lexer.getLocation());
+			if (lexer.peek() == CatspeakToken.BOX_LEFT) {
+				lexer.next();
+				var key_ = __parseExpression();
+				if (lexer.next() != CatspeakToken.BOX_RIGHT) {
+					__ex("expected ']' after expression, got '" + lexer.getLexeme() + "'");
+				}
+			} else {
+				__ex("expected '[' after 'argument', got '" + lexer.getLexeme() + "'");	
+			}
+			return ir.createParams(key_, lexer.getLocation());
 		} else {
-            return __parseIndex();
+            return __parseProperty();
         }
     };
+	
+	/// @ignore
+	///
+	/// @return {Struct}
+	static __parseProperty = function () {
+		var accessor;
+		switch(lexer.peek()) {
+			case GMLspeakToken.KEYBOARD_STRING:
+				accessor = "$$__KEYBOARD_STRING__$$";
+			break;
+			case GMLspeakToken.ROOM:
+				accessor = "$$__ROOM__$$";
+			break;
+			case GMLspeakToken.ROOM_WIDTH:
+				accessor = "$$__ROOM_WIDTH__$$";
+			break;
+			case GMLspeakToken.ROOM_HEIGHT:
+				accessor = "$$__ROOM_HEIGHT__$$";
+			break;
+			case GMLspeakToken.ROOM_PERSISTENT:
+				accessor = "$$__ROOM_PERSISTENT__$$";
+			break;
+			case GMLspeakToken.VIEW_ENABLED:
+				accessor = "$$__VIEW_ENABLED__$$";
+			break;
+			case GMLspeakToken.KEYBOARD_KEY:
+				accessor = "$$__KEYBOARD_KEY__$$";
+			break;
+			case GMLspeakToken.KEYBOARD_LASTCHAR:
+				accessor = "$$__KEYBOARD_LASTCHAR__$$";
+			break;
+			case GMLspeakToken.KEYBOARD_LASTKEY:
+				accessor = "$$__KEYBOARD_LASTKEY__$$";
+			break;
+			case GMLspeakToken.MOUSE_LASTBUTTON:
+				accessor = "$$__MOUSE_LASTBUTTON__$$";
+			break;
+			case GMLspeakToken.CURSOR_SPRITE:
+				accessor = "$$__CURSOR_SPRITE__$$";
+			break;
+			default:
+				return __parseIndex();
+		}
+		
+		lexer.next();
+		return ir.createProperty(ir.createGet(accessor), lexer.getLocation());
+	}
     
     /// @ignore
     ///
@@ -950,7 +1004,15 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             return ir.createValue(lexer.getValue(), lexer.getLocation());
         } else if (peeked == CatspeakToken.IDENT) {
             lexer.next();
-			if (lexer.getLexeme() == "alarm") {
+			var lexeme = lexer.getLexeme();
+			if (lexeme == "alarm") || 
+				(lexeme == "view_visible") || 
+				(lexeme == "view_camera") ||
+				(lexeme == "view_xport") ||
+				(lexeme == "view_yport") || 
+				(lexeme == "view_wport") ||
+				(lexeme == "view_hport") ||
+				(lexeme == "view_surface_id") {
 				if (lexer.peek() == CatspeakToken.BOX_LEFT) {
 					lexer.next();
 					var key = __parseExpression();
@@ -958,7 +1020,19 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 						__ex("expected closing ']' after 'alarm' index");	
 					}
 					
-					return __parseAssignAlarm(key);
+					var accessor = undefined;
+					switch(lexeme) {
+						case "alarm":			accessor = "$$__ALARM_ACCESSOR__$$"; break;
+						case "view_visible":	accessor = "$$__VIEW_VISIBLE__$$"; break;
+						case "view_camera":		accessor = "$$__VIEW_CAMERA__$$"; break;
+						case "view_xport":		accessor = "$$__VIEW_XPORT__$$"; break;
+						case "view_yport":		accessor = "$$__VIEW_YPORT__$$"; break;
+						case "view_wport":		accessor = "$$__VIEW_WPORT__$$"; break;
+						case "view_hport":		accessor = "$$__VIEW_HPORT__$$"; break;
+						case "view_surface_id": accessor = "$$__VIEW_SURFACE_ID__$$"; break;
+					}
+					
+					return __parseAssignGlobalAccessor(ir.createGet(accessor), key);
 				}
 			}
 			return __parseAsSelf(ir.createGet(lexer.getValue(), lexer.getLocation()));	
@@ -975,6 +1049,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 		} else if (peeked == GMLspeakToken.__GMFUNCTION__) {
 			lexer.next();
 			return ir.createValue(functionNames[array_length(functionNames)-1], lexer.getLocation())
+		} else if (peeked == CatspeakToken.PARAMS_COUNT) {
+			lexer.next();
+			return ir.createParamsCount(lexer.getLocation());
 		} else {
             return __parseGrouping();
         }

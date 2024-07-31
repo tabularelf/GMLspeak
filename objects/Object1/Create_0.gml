@@ -407,3 +407,47 @@ try {
 }
 
 gmlspeak.sharedGlobal.func();
+
+show_debug_message("Room properties test");
+var _code = @'
+	room_persistent = true;
+	return [room_width, room_height, room_persistent];
+';
+
+try {
+	var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+	show_debug_message(program());	
+} catch(_ex) {
+	show_debug_message(_ex.message);	
+}
+
+gmlspeak.enableWritingRoomProperties(true);
+
+var _code = @'
+	room_persistent = true;
+	return [room_width, room_height, room_persistent];
+';
+
+gmlspeak.enableWritingIOProperties(true);
+gmlspeak.interface.exposeAsset("Sprite2");
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+try {
+	show_debug_message(program());	
+} catch(_ex) {
+	show_debug_message(_ex.message);	
+}
+
+show_debug_message("Argument test");
+var _code = @'
+	var num = 0;
+	for(var i = 0; i < argument_count; i += 1) {
+		num += argument[i];
+	}
+	
+	view_visible[view_current] = false;
+	cursor_sprite = Sprite2;
+	return num;
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(program(2, 2));
