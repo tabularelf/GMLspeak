@@ -1,4 +1,4 @@
-# GMLspeak v1.1.0
+# GMLspeak v1.1.1
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)! (**Experimental currently!!!**)
 
 # Supported Features
@@ -12,10 +12,12 @@
 - automatic methodizing of functions (respects the caller scope)
 - Switch/case (as oppose to match/case)
 - Nullish coalescing operator `valueA ?? valueB` and tenary operator `value == otherValue ? valueA : valueB` support
+- Unlimited non-named Arguments (via Catspeak)
+- Accessors
+- The ability to allow writing to specific IO/room properties
 
 # To be added
 - methods with "global" scope self assign as "undefined" instead.
-- Unlimited non-named Arguments ([Core Catspeak addition](https://github.com/katsaii/catspeak-lang/issues/52))
   
 # Will probably never be added
 - Macros (Doable, but complicates any and all code caches, so won't be a core feature of GMLspeak. I may leave a note on how to achieve it.)
