@@ -276,7 +276,7 @@ var struct = {
 	bar: self.rawr
 };
 
-return struct';
+return struct[$ "foo"]';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 struct = program(self);

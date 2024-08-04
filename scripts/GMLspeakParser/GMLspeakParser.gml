@@ -933,6 +933,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 					case GMLspeakToken.DOLLAR_SIGN:
 						lexer.next();
 						key = __parseExpression();
+                        symbolUsed = true;
 					break;
 					case GMLspeakToken.QUESTION_MARK_SIGN:
 						lexer.next();
@@ -972,6 +973,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 						case GMLspeakToken.HASH_SIGN:
 							result = __parseAssignAccessor(ir.createGet("$$__GRID_ACCESSOR__$$"), collection, key);
 						break;
+                        case GMLspeakToken.DOLLAR_SIGN:
+                            result = __parseAssignAccessor(ir.createGet("$$__STRUCT_ACCESSOR__$$"), collection, key);
+                        break;
 					}
 				}
             } else if (peeked == CatspeakToken.DOT) {

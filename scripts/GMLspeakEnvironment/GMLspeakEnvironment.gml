@@ -365,6 +365,14 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 			if (!canWriteRoomProperties) return __gmlspeak_error("Writing to room properties is disabled!");
 			view_surface_id[key] = argument[1];	
 		},
+        "$$__STRUCT_ACCESSOR__$$",
+		function(collection, key) {
+			if (argument_count == 2) {
+				return collection[$ key];	
+			}
+			
+			collection[$ key] = argument[2];
+		},
 		"$$__MAP_ACCESSOR__$$",
 		function(collection, key) {
 			if (argument_count == 2) {
