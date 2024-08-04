@@ -5,8 +5,7 @@
 - For loops
 - Repeat loops
 - Comment blocks (every developers favourite `/* Secret little message */`)
-- Almost every single constant and dynamic constant GML has to offer (including custom `global`, sith a toggle to fully expose global).
-- custom self/other scope system. (head programs require passing self/other scope as arguments)
+- Almost every single constant and dynamic constant GML has to offer.
 - with() support (via Catspeak)
 - do/until loops
 - automatic methodizing of functions (respects the caller scope)
