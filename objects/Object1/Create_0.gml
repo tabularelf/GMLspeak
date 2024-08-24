@@ -44,12 +44,19 @@ gmlspeak.interface.exposeFunction(
 	"variable_struct_remove",
 	variable_struct_remove,
 	"struct_remove",
-	variable_struct_remove
+	variable_struct_remove,
+    "event_inherited",
+    event_inherited
 );
 
 gmlspeak.interface.exposeAsset("Room2");
 
+Catspeak.interface.exposeFunction("event_inherited", event_inherited);
 Catspeak.interface.exposeFunction("print", show_debug_message);
+
+var _inst = instance_create_depth(0, 0, 0, obj_test2, {
+   program: Catspeak.compileGML(Catspeak.parseString("event_inherited();")), 
+});
 
 codeCatspeak = @'
 -- compute the factorial of n
@@ -444,6 +451,11 @@ var _code = @'
 		num += argument[i];
 	}
 	
+    var foo = "bar";
+    show_debug_message(foo);
+    delete foo;
+    show_debug_message(foo);
+    
 	view_visible[view_current] = false;
 	cursor_sprite = Sprite2;
 	return num;

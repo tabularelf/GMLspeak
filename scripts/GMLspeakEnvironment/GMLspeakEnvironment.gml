@@ -106,7 +106,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
         "let", "var",
         "fun", "function",
         "impl", "constructor", // Not implemented
-		"params", "arguments", // Not implemented
+		"params", "arguments", 
     );
 	
 	removeKeyword(
@@ -185,6 +185,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"_GMFUNCTION_",		GMLspeakToken.__GMFUNCTION__,
 		"argument",			CatspeakToken.PARAMS,
 		"argument_count",	CatspeakToken.PARAMS_COUNT,
+        "delete",           GMLspeakToken.DELETE,
 	);
 	
 	interface.exposeDynamicConstant(

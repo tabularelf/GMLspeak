@@ -155,7 +155,10 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 value = __parseExpression();
             }
             return ir.createBreak(value, lexer.getLocation());
-        } else if (peeked == GMLspeakToken.DO) {
+        } else if (peeked == GMLspeakToken.DELETE) {
+            lexer.next();
+            return ir.createAssign(CatspeakAssign.VANILLA, __parseTerminal(), ir.createValue(undefined), lexer.getLocation());
+        } if (peeked == GMLspeakToken.DO) {
             lexer.next();
             ir.pushBlock();
             __parseStatements("do");
@@ -1021,7 +1024,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 					lexer.next();
 					var key = __parseExpression();
 					if (lexer.next() != CatspeakToken.BOX_RIGHT) {
-						__ex("expected closing ']' after 'alarm' index");	
+						__ex("expected closing ']' after '"+lexeme+"' index");	
 					}
 					
 					var accessor = undefined;

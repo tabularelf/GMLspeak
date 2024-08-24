@@ -47,6 +47,7 @@ enum GMLspeakToken {
 	__GMLINE__,
 	__GMFILE__,
 	__GMFUNCTION__,
+    DELETE,
     /// @ignore
     __SIZE__
 }
