@@ -456,6 +456,11 @@ var _code = @'
     delete foo;
     show_debug_message(foo);
     
+    global.foo = {bar: {rawr: "32"}}
+    show_debug_message(global.foo);
+    delete global.foo.bar.rawr;
+    show_debug_message(global.foo);
+    
 	view_visible[view_current] = false;
 	cursor_sprite = Sprite2;
 	return num;

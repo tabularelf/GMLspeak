@@ -157,7 +157,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             return ir.createBreak(value, lexer.getLocation());
         } else if (peeked == GMLspeakToken.DELETE) {
             lexer.next();
-            return ir.createAssign(CatspeakAssign.VANILLA, __parseTerminal(), ir.createValue(undefined), lexer.getLocation());
+            return ir.createAssign(CatspeakAssign.VANILLA, __parseIndex(), ir.createValue(undefined), lexer.getLocation());
         } if (peeked == GMLspeakToken.DO) {
             lexer.next();
             ir.pushBlock();
