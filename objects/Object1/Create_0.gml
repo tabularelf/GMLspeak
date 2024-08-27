@@ -124,7 +124,7 @@ globals.factorial(4);
 globals.factorial(5);
 globals.factorial(6);
 show_debug_message("Catspeak Manual factorial: " + string((get_timer() - _t) / 1000));
-var _t = get_timer();
+var _t = get_timer(); 
 catspeak_execute(programGMLspeak);
 show_debug_message("GMLspeak factorial: " + string((get_timer() - _t) / 1000));
 
@@ -200,6 +200,10 @@ for(;;) {
 	if (i > 9) {
 		break;
 	}
+}
+
+for(var i = 0; i < 9; i += 1) {
+	show_debug_message(i);
 }
 
 ';
@@ -450,16 +454,6 @@ var _code = @'
 	for(var i = 0; i < argument_count; i += 1) {
 		num += argument[i];
 	}
-	
-    var foo = "bar";
-    show_debug_message(foo);
-    delete foo;
-    show_debug_message(foo);
-    
-    global.foo = {bar: {rawr: "32"}}
-    show_debug_message(global.foo);
-    delete global.foo.bar.rawr;
-    show_debug_message(global.foo);
     
 	view_visible[view_current] = false;
 	cursor_sprite = Sprite2;
@@ -468,3 +462,20 @@ var _code = @'
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program(2, 2));
+
+show_debug_message("delete test");
+var _code = @'
+    var foo = "bar";
+    show_debug_message(foo);
+    delete foo;
+    show_debug_message(foo);
+    
+    global.foo = {bar: {rawr: "32", rawr2: ds_map_create()}}
+    global.foo.bar.rawr2[? "ree"] = 32;
+    show_debug_message(global.foo);
+    delete global.foo.bar.rawr2[? "ree"];
+    show_debug_message(global.foo);
+    show_debug_message(global.foo.bar.rawr2[? "ree"]);
+';
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+program();

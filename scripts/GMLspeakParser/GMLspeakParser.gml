@@ -114,6 +114,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 valueTerm,
                 lexer.getLocation()
             );
+        } else if (peeked == GMLspeakToken.DELETE) {
+            lexer.next();
+            return ir.createAssign(CatspeakAssign.VANILLA, __parseIndex(), ir.createValue(undefined), lexer.getLocation());
         } else {
             result = __parseExpression();
         }
@@ -155,10 +158,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 value = __parseExpression();
             }
             return ir.createBreak(value, lexer.getLocation());
-        } else if (peeked == GMLspeakToken.DELETE) {
-            lexer.next();
-            return ir.createAssign(CatspeakAssign.VANILLA, __parseIndex(), ir.createValue(undefined), lexer.getLocation());
-        } if (peeked == GMLspeakToken.DO) {
+        } else if (peeked == GMLspeakToken.DO) {
             lexer.next();
             ir.pushBlock();
             __parseStatements("do");

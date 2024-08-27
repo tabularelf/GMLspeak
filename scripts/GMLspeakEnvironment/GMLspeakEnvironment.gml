@@ -185,7 +185,8 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"_GMFUNCTION_",		GMLspeakToken.__GMFUNCTION__,
 		"argument",			CatspeakToken.PARAMS,
 		"argument_count",	CatspeakToken.PARAMS_COUNT,
-        "delete",           GMLspeakToken.DELETE,
+		// TODO: Make delete work with other accessors
+		"delete",           GMLspeakToken.DELETE,
 	);
 	
 	interface.exposeDynamicConstant(
