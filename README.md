@@ -2,6 +2,7 @@
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)! (**Experimental currently!!!**)
 
 # Supported Features
+- While loops
 - For loops
 - Repeat loops
 - Comment blocks (every developers favourite `/* Secret little message */`)
