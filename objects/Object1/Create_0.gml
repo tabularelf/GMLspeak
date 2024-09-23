@@ -479,3 +479,11 @@ var _code = @'
 ';
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(@"
+    var surf = surface_create(128, 128);
+    surface_set_target(surf) {
+    
+        surface_reset_target();
+    }
+"));

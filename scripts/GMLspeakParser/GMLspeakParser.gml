@@ -117,7 +117,11 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         } else if (peeked == GMLspeakToken.DELETE) {
             lexer.next();
             return ir.createAssign(CatspeakAssign.VANILLA, __parseIndex(), ir.createValue(undefined), lexer.getLocation());
-        } else {
+        } else if (peeked = CatspeakToken.BRACE_LEFT) {
+			ir.pushBlock(true);
+			__parseStatements("block", true);
+			result = ir.popBlock(lexer.getLocation());
+		} else {
             result = __parseExpression();
         }
         ir.createStatement(result);
@@ -703,19 +707,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         //    lexer.next();
         //    return __parseExpression();]
 		// TODO::Implement better system
-        } else if (peeked == CatspeakToken.PARAMS) {
-			lexer.next();
-			if (lexer.peek() == CatspeakToken.BOX_LEFT) {
-				lexer.next();
-				var key_ = __parseExpression();
-				if (lexer.next() != CatspeakToken.BOX_RIGHT) {
-					__ex("expected ']' after expression, got '" + lexer.getLexeme() + "'");
-				}
-			} else {
-				__ex("expected '[' after 'argument', got '" + lexer.getLexeme() + "'");	
-			}
-			return ir.createParams(key_, lexer.getLocation());
-		} else {
+        } else {
             return __parseProperty();
         }
     };
@@ -1009,7 +1001,19 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
         if (peeked == CatspeakToken.VALUE) {
             lexer.next();
             return ir.createValue(lexer.getValue(), lexer.getLocation());
-        } else if (peeked == CatspeakToken.IDENT) {
+        } else if (peeked == CatspeakToken.PARAMS) {
+			lexer.next();
+			if (lexer.peek() == CatspeakToken.BOX_LEFT) {
+				lexer.next();
+				var key_ = __parseExpression();
+				if (lexer.next() != CatspeakToken.BOX_RIGHT) {
+					__ex("expected ']' after expression, got '" + lexer.getLexeme() + "'");
+				}
+			} else {
+				__ex("expected '[' after 'argument', got '" + lexer.getLexeme() + "'");	
+			}
+			return ir.createParams(key_, lexer.getLocation());
+		} else if (peeked == CatspeakToken.IDENT) {
             lexer.next();
 			var lexeme = lexer.getLexeme();
 			if (lexeme == "alarm") || 

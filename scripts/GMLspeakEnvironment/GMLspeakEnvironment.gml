@@ -149,6 +149,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"^",				CatspeakToken.BITWISE_XOR,
 		"|",				CatspeakToken.BITWISE_OR,
 		"self",				CatspeakToken.SELF,
+        "toString",         CatspeakToken.IDENT,
 		
 		// Implemented as comments since these kind of act like two separate comments.
 		// What could go wrong? 
@@ -186,7 +187,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"argument",			CatspeakToken.PARAMS,
 		"argument_count",	CatspeakToken.PARAMS_COUNT,
 		// TODO: Make delete work with other accessors
-		"delete",           GMLspeakToken.DELETE,
+		//"delete",           GMLspeakToken.DELETE,
 	);
 	
 	interface.exposeDynamicConstant(
