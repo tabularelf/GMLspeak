@@ -249,6 +249,31 @@ function CatspeakIRBuilder() constructor {
         });
     };
 
+    /// Creates an instruction for catching exceptions.
+    ///
+    /// @param {Struct} eager
+    ///   The term which evaluates immediately, maybe raising an exception.
+    ///
+    /// @param {Struct} lazy
+    ///   The term which evaluates if the first term is exceptional.
+    ///
+    /// @param {Struct} localRef
+    ///   The local variable to write the exception to.
+    ///   Can be `undefined` is no variable is needed/wanted.
+    ///
+    /// @param {Real} [location]
+    ///   The source location of this term.
+    ///
+    /// @return {Struct}
+    static createCatch = function (eager, lazy, localRef, location=undefined) {
+        // __createTerm() will do argument validation
+        return __createTerm(CatspeakTerm.CATCH, location, {
+            eager : eager,
+            lazy : lazy,
+            localRef : localRef,
+        });
+    };
+
     /// Emits the instruction for a generic loop. GML style `while`,
     /// `for`, and `do` loops can be implemented in terms of this function.
     ///
@@ -387,6 +412,25 @@ function CatspeakIRBuilder() constructor {
     static createContinue = function (location=undefined) {
         // __createTerm() will do argument validation
         return __createTerm(CatspeakTerm.CONTINUE, location, { });
+    };
+
+    /// Emits the instruction to raise an exception a specified value.
+    ///
+    /// @param {Struct} value
+    ///   The instruction for the value to break with.
+    ///
+    /// @param {Real} [location]
+    ///   The source location of this value term.
+    ///
+    /// @return {Struct}
+    static createThrow = function (value, location=undefined) {
+        if (CATSPEAK_DEBUG_MODE) {
+            __catspeak_check_arg_struct("value", value);
+        }
+        // __createTerm() will do argument validation
+        return __createTerm(CatspeakTerm.THROW, location, {
+            value : value
+        });
     };
 
     /// Emits the instruction to call a function with a set of arguments.
@@ -562,8 +606,14 @@ function CatspeakIRBuilder() constructor {
             }
             // constant folding
             var opFunc = __catspeak_operator_get_binary(operator);
-            lhs.value = opFunc(lhs.value, rhs.value);
-            return lhs;
+            try {
+                lhs.value = opFunc(lhs.value, rhs.value);
+                return lhs;
+            } catch (ex_) {
+                __catspeak_error_silent(__catspeak_location_show_ext(
+                    location, "failed to optimise binary expression"
+                ));
+            }
         }
         // __createTerm() will do argument validation
         return __createTerm(CatspeakTerm.OP_BINARY, location, {
@@ -596,8 +646,15 @@ function CatspeakIRBuilder() constructor {
             }
             // constant folding
             var opFunc = __catspeak_operator_get_unary(operator);
-            value.value = opFunc(value.value);
-            return value;
+            try {
+                value.value = opFunc(value.value);
+                return value;
+            } catch (ex_) {
+                // couldn't do it......................slime man
+                __catspeak_error_silent(__catspeak_location_show_ext(
+                    location, "failed to optimise unary expression"
+                ));
+            }
         }
         // __createTerm() will do argument validation
         return __createTerm(CatspeakTerm.OP_UNARY, location, {
@@ -615,6 +672,17 @@ function CatspeakIRBuilder() constructor {
     static createSelf = function (location=undefined) {
         // __createTerm() will do argument validation
         return __createTerm(CatspeakTerm.SELF, location, { });
+    };
+
+    /// Creates an instruction for accessing the caller `other`.
+    ///
+    /// @param {Real} [location]
+    ///   The source location of this term.
+    ///
+    /// @return {Struct}
+    static createOther = function (location=undefined) {
+        // __createTerm() will do argument validation
+        return __createTerm(CatspeakTerm.OTHER, location, { });
     };
 
     /// Attempts to assign a right-hand-side value to a left-hand-side target.
@@ -953,7 +1021,8 @@ function __catspeak_term_is_pure(kind) {
             kind == CatspeakTerm.LOCAL ||
             kind == CatspeakTerm.GLOBAL ||
             kind == CatspeakTerm.FUNCTION ||
-            kind == CatspeakTerm.SELF;
+            kind == CatspeakTerm.SELF ||
+            kind == CatspeakTerm.OTHER;
 }
 
 /// @ignore
@@ -975,6 +1044,8 @@ function __catspeak_term_get_terminal(term) {
         return term.name;
     } else if (term.type == CatspeakTerm.SELF) {
         return "self";
+    } else if (term.type == CatspeakTerm.OTHER) {
+        return "other";
     } else if (term.type == CatspeakTerm.VALUE) {
         if (CATSPEAK_DEBUG_MODE) {
             __catspeak_check_arg_struct("term", term,
@@ -1004,6 +1075,7 @@ enum CatspeakTerm {
     RETURN,
     BREAK,
     CONTINUE,
+    THROW,
     OP_BINARY,
     OP_UNARY,
     CALL,
@@ -1017,6 +1089,8 @@ enum CatspeakTerm {
     PARAMS,
     PARAMS_COUNT,
     SELF,
+    OTHER,
+    CATCH,
     /// @ignore
     __SIZE__
 }

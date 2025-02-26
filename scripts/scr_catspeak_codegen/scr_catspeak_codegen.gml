@@ -46,424 +46,6 @@ function is_catspeak(value) {
     return string_starts_with(scrName, "__catspeak_");
 }
 
-/// Used by Catspeak code generators to expose foreign GML functions,
-/// constants, and properties to the generated Catspeak programs.
-function CatspeakForeignInterface() constructor {
-    /// @ignore
-    self.database = { };
-    /// @ignore
-    self.databaseDynConst = { }; // contains keywords marked as "dynamic constants"
-    /// @ignore
-    self.banList = { };
-
-    /// Returns the value of a foreign symbol exposed to this interface.
-    ///
-    /// @param {String} name
-    ///   The name of the symbol as it appears in Catspeak.
-    ///
-    /// @return {Any}
-    static get = function (name) {
-        if (variable_struct_exists(banList, name)) {
-            // this function has been banned!
-            return undefined;
-        }
-        return database[$ name];
-    };
-
-    /// Returns whether the foreign symbol is a "dynamic constant".
-    /// If the symbol hasn't been added then this function returns `false`.
-    ///
-    /// @experimental
-    ///
-    /// @param {String} name
-    ///   The name of the symbol as it appears in Catspeak.
-    ///
-    /// @return {Bool}
-    static isDynamicConstant = function (name) {
-        return databaseDynConst[$ name] ?? false;
-    };
-
-    /// Returns whether a foreign symbol is exposed to this interface.
-    ///
-    /// @param {String} name
-    ///   The name of the symbol as it appears in Catspeak.
-    ///
-    /// @return {Bool}
-    static exists = function (name) {
-        if (variable_struct_exists(banList, name)) {
-            // this function has been banned!
-            return false;
-        }
-        return variable_struct_exists(database, name);
-    };
-
-    /// Bans an array of symbols from being used by this interface. Any
-    /// symbols in this list will be treated as though they do not exist. To
-    /// unban a set of symbols, you should use the `addPardonList` method.
-    ///
-    /// If a symbol was previously banned, this function will have no effect.
-    ///
-    /// @param {String} ban
-    ///   The symbol to ban the usage of from within Catspeak.
-    static addBanList = function () {
-        var banList_ = banList;
-        for (var i = 0; i < argument_count; i += 1) {
-            var ban = argument[i];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("ban", ban, is_string);
-            }
-            banList_[$ ban] = true;
-        }
-    };
-
-    /// Pardons an array of symbols within this interface.
-    ///
-    /// If a symbol was not previously banned by `addBanList`, there will be
-    /// no effect.
-    ///
-    /// @param {String} pardon
-    ///   The symbol to pardon the usage of from within Catspeak.
-    static addPardonList = function () {
-        var banList_ = banList;
-        for (var i = 0; i < argument_count; i += 1) {
-            var pardon = argument[i];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("pardon", pardon, is_string);
-            }
-            if (variable_struct_exists(banList_, pardon)) {
-                variable_struct_remove(banList_, pardon);
-            }
-        }
-    };
-
-    /// Exposes a constant value to this interface.
-    ///
-    /// @remark
-    ///   You cannot expose GML functions using this method. Instead you
-    ///   should use one of `exposeDynamicConstant`, `exposeFunction`, or
-    ///   `exposeMethod`.
-    ///
-    /// @param {String} name
-    ///   The name of the constant as it will appear in Catspeak.
-    ///
-    /// @param {Any} value
-    ///   The constant value to add.
-    static exposeConstant = function () {
-        for (var i = 0; i < argument_count; i += 2) {
-            var name = argument[i + 0];
-            var value = argument[i + 1];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("name", name, is_string);
-                //__catspeak_check_arg_not("value", value, __catspeak_is_callable);
-            }
-            database[$ name] = value;
-        }
-    };
-
-    /// Exposes a "dynamic constant" to this interface. The value provided for
-    /// the constant should be a script or method. When the dynamic constant
-    /// is evaluated at runtime, the method will be executed with zero
-    /// arguments and the return value used as the value of the constant.
-    ///
-    /// @experimental
-    ///
-    /// @param {String} name
-    ///   The name of the constant as it will appear in Catspeak.
-    ///
-    /// @param {Function} func
-    ///   The script ID or function to add.
-    static exposeDynamicConstant = function () {
-        for (var i = 0; i < argument_count; i += 2) {
-            var name = argument[i + 0];
-            var func = argument[i + 1];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("name", name, is_string);
-                //__catspeak_check_arg("func", func, is_method);
-            }
-            func = is_method(func) ? func : method(undefined, func);
-            database[$ name] = func;
-            databaseDynConst[$ name] = true;
-        }
-    };
-
-    /// Exposes a new unbound function to this interface. When passed a bound
-    /// method (i.e. a non-global function), it will be unbound before it is
-    /// added to the interface.
-    ///
-    /// @remark
-    ///   If you would prefer to keep the bound `self` of a method, you should
-    ///   use the `exposeMethod` method instead.
-    ///
-    /// @param {String} name
-    ///   The name of the function as it will appear in Catspeak.
-    ///
-    /// @param {Function} func
-    ///   The script ID or function to add.
-    static exposeFunction = function () {
-        for (var i = 0; i < argument_count; i += 2) {
-            var name = argument[i + 0];
-            var func = argument[i + 1];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("name", name, is_string);
-                //__catspeak_check_arg("func", func, __catspeak_is_callable);
-            }
-            func = is_method(func) ? method_get_index(func) : func;
-            database[$ name] = method(undefined, func);
-        }
-    };
-
-    /// Behaves similarly to `exposeFunction`, except the name of definition
-    /// is inferred. There are three ways this name will be inferred:
-    ///
-    ///  1) If the value is a script resource, `script_get_name` is used.
-    ///  2) If the value is a method and a `name` field exists, then the value
-    ///     of this `name` field will be used as the name.
-    ///  3) If the value is a method and a `name` field does not exist, then
-    ///     `script_get_name` will be called on the underlying bound script
-    ///     resource.
-    ///
-    /// @remark
-    ///   If you would prefer to keep the bound `self` of a method, you should
-    ///   use the `exposeMethodByName` method instead.
-    ///
-    /// @param {Function} func
-    ///   The script ID or function to add.
-    static exposeFunctionByName = function () {
-        for (var i = 0; i < argument_count; i += 1) {
-            var func = argument[i];
-            var name;
-            if (is_string(func)) {
-                name = func;
-                func = undefined;
-                if (
-                    !string_starts_with(name, "<unknown>") &&
-                    !string_starts_with(name, "@@") &&
-                    !string_starts_with(name, "$") &&
-                    !string_starts_with(name, "YoYo") &&
-                    !string_starts_with(name, "yy") &&
-                    !string_starts_with(name, "[[") &&
-                    !string_starts_with(name, "__")
-                ) {
-                    for(var builtinID = 0; builtinID < 10000; builtinID += 1;) {
-                        var scriptName = script_get_name(builtinID);
-                        if (scriptName == name) {
-                            func = builtinID;
-                            break;
-                        }
-                    }
-                }
-                if (func == undefined) {
-                    for (var scriptID = 100001; script_exists(scriptID); scriptID += 1) {
-                        var scriptName = script_get_name(scriptID);
-                        if (
-                            string_starts_with(scriptName, "anon") ||
-                            string_count("gml_GlobalScript", scriptName) > 0 ||
-                            string_count("__struct__", scriptName) > 0
-                        ) {
-                            continue;
-                        }
-                        if (scriptName == name) {
-                            func = scriptID;
-                            break;
-                        }
-                    }
-                }
-                if (func == undefined) {
-                    __catspeak_error("function with the name '", name, "' cannot be found");
-                }
-            } else {
-                name = __catspeak_infer_function_name(func);
-                func = is_method(func) ? method_get_index(func) : func;
-            }
-            database[$ name] = method(undefined, func);
-        }
-    };
-
-    /// Exposes many user-defined global GML functions to this interface which
-    /// share a common prefix.
-    ///
-    /// @param {String} namespace
-    ///   The common prefix for the set of functions you want to expose to
-    ///   Catspeak.
-    static exposeFunctionByPrefix = function () {
-        for (var i = 0; i < argument_count; i += 1) {
-            var namespace = argument[i];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("namespace", namespace, is_string);
-            }
-            // asset scanning for functions can be a lil weird, in my experience
-            // i've came across a few variations
-            //
-            // their positions aren't always 100% known, except for anon
-            // (which is always at the front)
-            //
-            // NOTE: not GMRT compatible
-            var database_ = database;
-            if (
-                !string_starts_with(namespace, "<unknown>") &&
-                !string_starts_with(namespace, "@@") &&
-                !string_starts_with(namespace, "$") &&
-                !string_starts_with(namespace, "YoYo") &&
-                !string_starts_with(namespace, "yy") &&
-                !string_starts_with(namespace, "[[") &&
-                !string_starts_with(namespace, "__")
-            ) {
-                for(var builtinID = 0; builtinID < 10000; builtinID += 1;) {
-                    var name = script_get_name(builtinID);
-                    if (string_starts_with(name, namespace)) {
-                        database_[$ name] = method(undefined, builtinID);
-                    }
-                }
-            }
-            for (var scriptID = 100001; script_exists(scriptID); scriptID += 1) {
-                var name = script_get_name(scriptID);
-                if (
-                    string_starts_with(name, "anon") ||
-                    string_count("gml_GlobalScript", name) > 0 ||
-                    string_count("__struct__", name) > 0
-                ) {
-                    continue;
-                }
-                if (string_starts_with(name, namespace)) {
-                    database_[$ name] = method(undefined, scriptID); 
-                }
-            }
-        }
-    };
-
-    /// Exposes a new bound function to this interface.
-    ///
-    /// @remark
-    ///   If you would prefer to ignore the bound `self` value of the function,
-    ///   and treat it as a global script, you should use the `exposeFunction`
-    ///   method instead.
-    ///
-    /// @param {String} name
-    ///   The name of the method as it will appear in Catspeak.
-    ///
-    /// @param {Function} func
-    ///   The script ID or method to add.
-    static exposeMethod = function () {
-        for (var i = 0; i < argument_count; i += 2) {
-            var name = argument[i + 0];
-            var func = argument[i + 1];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("name", name, is_string);
-                //__catspeak_check_arg("func", func, __catspeak_is_callable);
-            }
-            func = is_method(func) ? func : method(undefined, func);
-            database[$ name] = func;
-        }
-    };
-
-    /// Behaves similarly to `exposeMethod`, except the name of definition
-    /// is inferred. There are three ways a name will be inferred:
-    ///
-    ///  1) If the value is a script resource, `script_get_name` is used.
-    ///  2) If the value is a method and a `name` field exists, then the value
-    ///     of this `name` field will be used as the name.
-    ///  3) If the value is a method and a `name` field does not exist, then
-    ///     `script_get_name` will be called on the underlying bound script
-    ///     resource.
-    ///
-    /// @remark
-    ///   If you would prefer to ignore the bound `self` value of the function,
-    ///   and treat it as a global script, you should use the
-    ///   `exposeFunctionByName` method instead.
-    ///
-    /// @param {Function} func
-    ///   The script ID or method to add.
-    static exposeMethodByName = function () {
-        for (var i = 0; i < argument_count; i += 1) {
-            var func = argument[i];
-            var name;
-            if (is_string(func)) {
-                name = func;
-                func = undefined;
-                if (
-                    !string_starts_with(name, "<unknown>") &&
-                    !string_starts_with(name, "@@") &&
-                    !string_starts_with(name, "$") &&
-                    !string_starts_with(name, "YoYo") &&
-                    !string_starts_with(name, "yy") &&
-                    !string_starts_with(name, "[[") &&
-                    !string_starts_with(name, "__")
-                ) {
-                    for(var builtinID = 0; builtinID < 10000; builtinID += 1;) {
-                        var scriptName = script_get_name(builtinID);
-                        if (scriptName == name) {
-                            func = builtinID;
-                            break;
-                        }
-                    }
-                }
-                if (func == undefined) {
-                    for (var scriptID = 100001; script_exists(scriptID); scriptID += 1) {
-                        var scriptName = script_get_name(scriptID);
-                        if (
-                            string_starts_with(scriptName, "anon") ||
-                            string_count("gml_GlobalScript", scriptName) > 0 ||
-                            string_count("__struct__", scriptName) > 0
-                        ) {
-                            continue;
-                        }
-                        if (scriptName == name) {
-                            func = scriptID;
-                            break;
-                        }
-                    }
-                }
-                if (func == undefined) {
-                    __catspeak_error("method with the name '", name, "' cannot be found");
-                }
-            } else {
-                name = __catspeak_infer_function_name(func);
-            }
-            func = is_method(func) ? func : method(undefined, func);
-            database[$ name] = func;
-        }
-    };
-
-    /// Exposes a GameMaker asset from the resource tree to this interface.
-    ///
-    /// @param {String} name
-    ///   The name of the GM asset that you wish to expose to Catspeak.
-    static exposeAsset = function () {
-        for (var i = 0; i < argument_count; i += 1) {
-            var name = argument[i];
-            if (CATSPEAK_DEBUG_MODE) {
-                __catspeak_check_arg("name", name, is_string);
-            }
-            var value = asset_get_index(name);
-            var type = asset_get_type(name);
-            // validate that it's an actual GM Asset
-            if (value == -1) {
-                __catspeak_error(
-                    "invalid GMAsset: got '", value, "' from '", name, "'"
-                );
-            }
-            if (type == asset_script) {
-                // scripts must be coerced into methods
-                value = method(undefined, value);
-            }
-            database[$ name] = value;
-        }
-    };
-
-    /// Exposes a set of tagged GameMaker assets to this interface.
-    ///
-    /// @param {Any} tag
-    ///   The name of a tag, or array of tags, of assets to expose to Catspeak.
-    static exposeAssetByTag = function () {
-        for (var i = 0; i < argument_count; i += 1) {
-            var assets = tag_get_assets(argument[i]);
-            for (var j = array_length(assets) - 1; j >= 0; j -= 1) {
-                exposeAsset(assets[j]);
-            }
-        }
-    };
-}
-
 /// The number of microseconds before a Catspeak program times out. The
 /// default is 1 second.
 ///
@@ -604,12 +186,17 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
     /// @ignore
     static __setupCatspeakFunctionMethods = function (f) {
         f.setSelf = method(sharedData, function (selfInst) {
-            self_ = catspeak_special_to_struct(selfInst);
+            self_ = selfInst == undefined
+                    ? undefined
+                    : catspeak_special_to_struct(selfInst);
         });
         f.setGlobals = method(sharedData, function (globalInst) {
-            globals = catspeak_special_to_struct(globalInst);
+            var newGlobals = catspeak_special_to_struct(globalInst);
+            if (newGlobals != undefined) {
+                globals = newGlobals;
+            }
         });
-        f.getSelf = method(sharedData, function () { return self_ ?? globals });
+        f.getSelf = method(sharedData, function () { return self_ });
         f.getGlobals = method(sharedData, function () { return globals });
     };
 
@@ -801,6 +388,30 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
     /// @param {Struct} ctx
     /// @param {Struct} term
     /// @return {Function}
+    static __compileCatch = function (ctx, term) {
+        if (CATSPEAK_DEBUG_MODE) {
+            __catspeak_check_arg_struct("term", term,
+                "eager", undefined,
+                "lazy", undefined,
+                "localRef", undefined
+            );
+            __catspeak_check_arg_struct("term.localRef", term.localRef,
+                "idx", is_numeric
+            );
+        }        
+        return method({
+            eager : __compileTerm(ctx, term.eager),
+            lazy : __compileTerm(ctx, term.lazy),
+            locals : ctx.locals,
+            idx : term.localRef.idx,
+        }, __catspeak_expr_catch__);
+    };
+
+    /// @ignore
+    ///
+    /// @param {Struct} ctx
+    /// @param {Struct} term
+    /// @return {Function}
     static __compileLoop = function (ctx, term) {
         if (CATSPEAK_DEBUG_MODE) {
             __catspeak_check_arg_struct("term", term,
@@ -947,6 +558,22 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
     /// @param {Struct} ctx
     /// @param {Struct} term
     /// @return {Function}
+    static __compileThrow = function (ctx, term) {
+        if (CATSPEAK_DEBUG_MODE) {
+            __catspeak_check_arg_struct("term", term,
+                "value", undefined
+            );
+        }
+        return method({
+            value : __compileTerm(ctx, term.value),
+        }, __catspeak_expr_throw__);
+    };
+
+    /// @ignore
+    ///
+    /// @param {Struct} ctx
+    /// @param {Struct} term
+    /// @return {Function}
     static __compileOpUnary = function (ctx, term) {
         if (CATSPEAK_DEBUG_MODE) {
             __catspeak_check_arg_struct("term", term,
@@ -1062,6 +689,8 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
             case 1: func = __catspeak_expr_call_1__; break;
             case 2: func = __catspeak_expr_call_2__; break;
             case 3: func = __catspeak_expr_call_3__; break;
+            case 4: func = __catspeak_expr_call_4__; break;
+            case 5: func = __catspeak_expr_call_5__; break;
             }
             return method({
                 dbgError : dbgError,
@@ -1345,6 +974,15 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
     /// @param {Struct} ctx
     /// @param {Struct} term
     /// @return {Function}
+    static __compileOther = function (ctx, term) {
+        return method(sharedData, __catspeak_expr_other__);
+    };
+
+    /// @ignore
+    ///
+    /// @param {Struct} ctx
+    /// @param {Struct} term
+    /// @return {Function}
     static __compileTerm = function (ctx, term) {
         if (CATSPEAK_DEBUG_MODE) {
             __catspeak_check_arg_struct("term", term,
@@ -1366,12 +1004,14 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
         db[@ CatspeakTerm.STRUCT] = __compileStruct;
         db[@ CatspeakTerm.BLOCK] = __compileBlock;
         db[@ CatspeakTerm.IF] = __compileIf;
+        db[@ CatspeakTerm.CATCH] = __compileCatch;
         db[@ CatspeakTerm.LOOP] = __compileLoop;
         db[@ CatspeakTerm.WITH] = __compileWith;
         db[@ CatspeakTerm.MATCH] = __compileMatch;
         db[@ CatspeakTerm.RETURN] = __compileReturn;
         db[@ CatspeakTerm.BREAK] = __compileBreak;
         db[@ CatspeakTerm.CONTINUE] = __compileContinue;
+        db[@ CatspeakTerm.THROW] = __compileThrow;
         db[@ CatspeakTerm.OP_BINARY] = __compileOpBinary;
         db[@ CatspeakTerm.OP_UNARY] = __compileOpUnary;
         db[@ CatspeakTerm.CALL] = __compileCall;
@@ -1383,6 +1023,7 @@ function CatspeakGMLCompiler(ir, interface=undefined) constructor {
         db[@ CatspeakTerm.LOCAL] = __compileLocal;
         db[@ CatspeakTerm.FUNCTION] = __compileFunctionExpr;
         db[@ CatspeakTerm.SELF] = __compileSelf;
+        db[@ CatspeakTerm.OTHER] = __compileOther;
         db[@ CatspeakTerm.AND] = __compileAnd;
         db[@ CatspeakTerm.OR] = __compileOr;
         db[@ CatspeakTerm.PARAMS] = __compileParams;
@@ -1482,14 +1123,19 @@ function __catspeak_function__() {
     for(var argI = argument_count - 1; argI >= 0; argI -= 1) {
         args[@ argI] = argument[argI];	
     }
-    var value;
+    var value = undefined;
+    var throwValue = undefined;
+    var doThrowValue = false;
+    // the finally block doesn't execute sometimes if there's a `break`,
+    // `throw`, or `continue` in the try/catch blocks
     try {
         value = program();
     } catch (e) {
         if (e == global.__catspeakGmlReturnRef) {
             value = e[0];
         } else {
-            throw e;
+            throwValue = e;
+            doThrowValue = true;
         }
     } finally {
         if (isRecursing) {
@@ -1512,6 +1158,9 @@ function __catspeak_function__() {
             array_resize(args, 0);
             array_resize(args, argCount);
         }
+    }
+    if (doThrowValue) {
+        throw throwValue;
     }
     return value;
 }
@@ -1619,6 +1268,19 @@ function __catspeak_expr_if__() {
 /// @return {Any}
 function __catspeak_expr_if_else__() {
     return condition() ? ifTrue() : ifFalse();
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_catch__() {
+    var result;
+    try {
+        result = eager();
+    } catch (exValue) {
+        locals[@ idx] = exValue;
+        result = lazy();
+    }
+    return result;
 }
 
 /// @ignore
@@ -1734,18 +1396,32 @@ function __catspeak_expr_loop_general__() {
 /// @return {Any}
 function __catspeak_expr_loop_with__() {
     var body_ = body;
+    var throwValue = undefined;
+    var doThrowValue = false;
+    var returnValue = undefined;
+    var doReturnValue = false;
     with (scope()) {
+        // the finally block doesn't execute sometimes if there's a `break`,
+        // `throw`, or `continue` in the try/catch blocks
         __CATSPEAK_BEGIN_SELF = self;
         try {
             body_();
         } catch (e) {
             if (e == global.__catspeakGmlBreakRef) {
-                return e[0];
+                returnValue = e[0];
+                doReturnValue = true;
             } else if (e != global.__catspeakGmlContinueRef) {
-                throw e;
+                throwValue = e;
+                doThrowValue = true;
             }
         }
         __CATSPEAK_END_SELF;
+        if (doThrowValue) {
+            throw throwValue;
+        }
+        if (doReturnValue) {
+            return returnValue;
+        }
     }
     return undefined;
 }
@@ -1807,6 +1483,12 @@ function __catspeak_expr_continue__() {
 
 /// @ignore
 /// @return {Any}
+function __catspeak_expr_throw__() {
+    throw value();
+}
+
+/// @ignore
+/// @return {Any}
 function __catspeak_expr_op_1__() {
     var value_ = value();
     return op(value_);
@@ -1820,6 +1502,34 @@ function __catspeak_expr_op_2__() {
     return op(lhs_, rhs_);
 }
 
+function __catspeak_script_execute_ext_fixed(callee_, args_) {
+    // LTS has issues with calling functions that have many args, so fix that here
+    var n = array_length(args_);
+    switch (n) {
+        // triangle of doom gets a free pass on line length restrictions
+        // as a treat
+        // TODO :: slow as hell
+    case 0: return callee_();
+    case 1: return callee_(args_[0]);
+    case 2: return callee_(args_[0], args_[1]);
+    case 3: return callee_(args_[0], args_[1], args_[2]);
+    case 4: return callee_(args_[0], args_[1], args_[2], args_[3]);
+    case 5: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4]);
+    case 6: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5]);
+    case 7: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6]);
+    case 8: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7]);
+    case 9: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8]);
+    case 10: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9]);
+    case 11: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9], args_[10]);
+    case 12: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9], args_[10], args_[11]);
+    case 13: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9], args_[10], args_[11], args_[12]);
+    case 14: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9], args_[10], args_[11], args_[12], args_[13]);
+    case 15: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9], args_[10], args_[11], args_[12], args_[13], args_[14]);
+    case 16: return callee_(args_[0], args_[1], args_[2], args_[3], args_[4], args_[5], args_[6], args_[7], args_[8], args_[9], args_[10], args_[11], args_[12], args_[13], args_[14], args_[15]);
+    }
+    return script_execute_ext(callee_, args_);
+}
+
 /// @ignore
 /// @return {Any}
 function __catspeak_expr_call_method__() {
@@ -1829,6 +1539,9 @@ function __catspeak_expr_call_method__() {
     var callee_;
     if (is_array(collection_)) {
         callee_ = collection_[key_];
+        var shared_ = shared;
+        // since arrays cannot be used in with statements, let's use something else
+        collection_ = global.__catspeakGmlSelf ?? (shared_.self_ ?? shared_.globals);
     } else if (__catspeak_is_withable(collection_)) {
         callee_ = collection_[$ key_];
     } else {
@@ -1852,11 +1565,18 @@ function __catspeak_expr_call_method__() {
             i += 1;
         }
     }
-    var shared_ = shared;
+    var result = undefined;
+    // a weird sharp edge here means that `__CATSPEAK_BEGIN_SELF` needs
+    // to use `catspeak_get_self`, but the actual with loop needs to use
+    // `method_get_self` (see test "get-self-method")
+    __CATSPEAK_BEGIN_SELF = catspeak_get_self(callee_) ?? collection_;
     with (method_get_self(callee_) ?? collection_) {
         var calleeIdx = method_get_index(callee_);
-        return script_execute_ext(calleeIdx, args_);
+        result = __catspeak_script_execute_ext_fixed(calleeIdx, args_);
+        break;
     }
+    __CATSPEAK_END_SELF;
+    return result;
 }
 
 /// @ignore
@@ -1882,10 +1602,10 @@ function __catspeak_expr_call__() {
     }
     var shared_ = shared;
     with (method_get_self(callee_) ?? 
-        (global.__catspeakGmlSelf ?? (shared_.self_ ?? shared_.globals))
+        (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals))
     ) {
         var calleeIdx = method_get_index(callee_);
-        return script_execute_ext(calleeIdx, args_);
+        return __catspeak_script_execute_ext_fixed(calleeIdx, args_);
     }
 }
 
@@ -1902,9 +1622,9 @@ function __catspeak_expr_call_0__() {
         return callee_();
     }
 	
-    with (global.__catspeakGmlSelf ?? (shared_.self_ ?? shared_.globals)) {
+    with (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals)) {
         var calleeIdx = method_get_index(callee_);
-        return script_execute(calleeIdx);
+        return calleeIdx();
     }
 }
 
@@ -1923,9 +1643,9 @@ function __catspeak_expr_call_1__() {
         return callee_(arg1);
     }
 	
-    with (global.__catspeakGmlSelf ?? (shared_.self_ ?? shared_.globals)) {
+    with (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals)) {
         var calleeIdx = method_get_index(callee_);
-        return script_execute(calleeIdx, arg1);
+        return calleeIdx(arg1);
     }
 }
 
@@ -1945,9 +1665,9 @@ function __catspeak_expr_call_2__() {
         return callee_(arg1, arg2);
     }
 	
-    with (global.__catspeakGmlSelf ?? (shared_.self_ ?? shared_.globals)) {
+    with (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals)) {
         var calleeIdx = method_get_index(callee_);
-        return script_execute(calleeIdx, arg1, arg2);
+        return calleeIdx(arg1, arg2);
     }
 }
 
@@ -1968,11 +1688,62 @@ function __catspeak_expr_call_3__() {
         return callee_(arg1, arg2, arg3);
     }
 	
-    with (global.__catspeakGmlSelf ?? (shared_.self_ ?? shared_.globals)) {
+    with (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals)) {
         var calleeIdx = method_get_index(callee_);
-        return script_execute(calleeIdx, arg1, arg2, arg3);
+        return calleeIdx(arg1, arg2, arg3);
     }
 }
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_call_4__() {
+    var callee_ = callee();
+    if (!is_method(callee_)) {
+        __catspeak_error_got(dbgError, callee_);
+    }
+    var values_ = args;
+    var arg1 = values_[0]();
+    var arg2 = values_[1]();
+    var arg3 = values_[2]();
+    var arg4 = values_[3]();
+    var shared_ = shared;
+
+    if (method_get_self(callee_) != undefined) {
+        return callee_(arg1, arg2, arg3, arg4);
+    }
+
+    with (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals)) {
+        var calleeIdx = method_get_index(callee_);
+        return calleeIdx(arg1, arg2, arg3, arg4);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __catspeak_expr_call_5__() {
+    var callee_ = callee();
+    if (!is_method(callee_)) {
+        __catspeak_error_got(dbgError, callee_);
+    }
+    var values_ = args;
+    var arg1 = values_[0]();
+    var arg2 = values_[1]();
+    var arg3 = values_[2]();
+    var arg4 = values_[3]();
+    var arg5 = values_[4]();
+    var shared_ = shared;
+
+    if (method_get_self(callee_) != undefined) {
+        return callee_(arg1, arg2, arg3, arg4, arg5);
+    }
+
+    with (shared_.self_ ?? (global.__catspeakGmlSelf ?? shared_.globals)) {
+        var calleeIdx = method_get_index(callee_);
+        return calleeIdx(arg1, arg2, arg3, arg4, arg5);
+    }
+}
+
+
 
 /// @ignore
 /// @return {Any}
@@ -2033,6 +1804,11 @@ function __catspeak_expr_index_set__() {
     if (is_array(collection_)) {
         collection_[@ key_] = value_;
     } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, value_);
+            return;
+        }
         collection_[$ key_] = value_;
     } else {
         __catspeak_error_got(dbgError, collection_);
@@ -2048,6 +1824,11 @@ function __catspeak_expr_index_set_mult__() {
     if (is_array(collection_)) {
         collection_[@ key_] *= value_;
     } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] * value_);
+            return;
+        }
         collection_[$ key_] *= value_;
     } else {
         __catspeak_error_got(dbgError, collection_);
@@ -2063,6 +1844,11 @@ function __catspeak_expr_index_set_div__() {
     if (is_array(collection_)) {
         collection_[@ key_] /= value_;
     } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] / value_);
+            return;
+        }
         collection_[$ key_] /= value_;
     } else {
         __catspeak_error_got(dbgError, collection_);
@@ -2078,6 +1864,11 @@ function __catspeak_expr_index_set_sub__() {
     if (is_array(collection_)) {
         collection_[@ key_] -= value_;
     } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] - value_);
+            return;
+        }
         collection_[$ key_] -= value_;
     } else {
         __catspeak_error_got(dbgError, collection_);
@@ -2093,6 +1884,11 @@ function __catspeak_expr_index_set_plus__() {
     if (is_array(collection_)) {
         collection_[@ key_] += value_;
     } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] + value_);
+            return;
+        }
         collection_[$ key_] += value_;
     } else {
         __catspeak_error_got(dbgError, collection_);
@@ -2241,7 +2037,7 @@ function __catspeak_expr_local_set_plus__() {
 function __catspeak_expr_self__() {
     // will either access a user-defined self instance, or the internal
     // global struct
-    return global.__catspeakGmlSelf ?? (self_ ?? globals);
+    return self_ ?? (global.__catspeakGmlSelf ?? globals);
 }
 
 /// @ignore
@@ -2275,4 +2071,97 @@ function __catspeak_init_codegen() {
     global.__catspeakGmlSelf = undefined;
     /// @ignore
     global.__catspeakGmlOther = undefined;
+    /// @ignore
+    global.__catspeakGmlSpecialVars = { };
+    var db = global.__catspeakGmlSpecialVars;
+    // addresses an LTS bug where self[$ name] = val doesn't work for internal properties
+    db[$ "enabled"] = function (s, v) { s.enabled = v };
+    db[$ "left"] = function (s, v) { s.left = v };
+    db[$ "right"] = function (s, v) { s.right = v };
+    db[$ "top"] = function (s, v) { s.top = v };
+    db[$ "bottom"] = function (s, v) { s.bottom = v };
+    db[$ "tilemode"] = function (s, v) { s.tilemode = v };
+    db[$ "frame"] = function (s, v) { s.frame = v };
+    db[$ "length"] = function (s, v) { s.length = v };
+    db[$ "stretch"] = function (s, v) { s.stretch = v };
+    db[$ "channels"] = function (s, v) { s.channels = v };
+    db[$ "channel"] = function (s, v) { s.channel = v };
+    db[$ "sequence"] = function (s, v) { s.sequence = v };
+    db[$ "headPosition"] = function (s, v) { s.headPosition = v };
+    db[$ "headDirection"] = function (s, v) { s.headDirection = v };
+    db[$ "speedScale"] = function (s, v) { s.speedScale = v };
+    db[$ "volume"] = function (s, v) { s.volume = v };
+    db[$ "paused"] = function (s, v) { s.paused = v };
+    db[$ "finished"] = function (s, v) { s.finished = v };
+    db[$ "activeTracks"] = function (s, v) { s.activeTracks = v };
+    db[$ "elementID"] = function (s, v) { s.elementID = v };
+    db[$ "name"] = function (s, v) { s.name = v };
+    db[$ "loopmode"] = function (s, v) { s.loopmode = v };
+    db[$ "playbackSpeed"] = function (s, v) { s.playbackSpeed = v };
+    db[$ "playbackSpeedType"] = function (s, v) { s.playbackSpeedType = v };
+    db[$ "xorigin"] = function (s, v) { s.xorigin = v };
+    db[$ "yorigin"] = function (s, v) { s.yorigin = v };
+    db[$ "tracks"] = function (s, v) { s.tracks = v };
+    db[$ "messageEventKeyframes"] = function (s, v) { s.messageEventKeyframes = v };
+    db[$ "momentKeyframes"] = function (s, v) { s.momentKeyframes = v };
+    db[$ "event_create"] = function (s, v) { s.event_create = v };
+    db[$ "event_destroy"] = function (s, v) { s.event_destroy = v };
+    db[$ "event_clean_up"] = function (s, v) { s.event_clean_up = v };
+    db[$ "event_step"] = function (s, v) { s.event_step = v };
+    db[$ "event_step_begin"] = function (s, v) { s.event_step_begin = v };
+    db[$ "event_step_end"] = function (s, v) { s.event_step_end = v };
+    db[$ "event_async_system"] = function (s, v) { s.event_async_system = v };
+    db[$ "event_broadcast_message"] = function (s, v) { s.event_broadcast_message = v };
+    db[$ "type"] = function (s, v) { s.type = v };
+    db[$ "subType"] = function (s, v) { s.subType = v };
+    db[$ "traits"] = function (s, v) { s.traits = v };
+    db[$ "interpolation"] = function (s, v) { s.interpolation = v };
+    db[$ "visible"] = function (s, v) { s.visible = v };
+    db[$ "linked"] = function (s, v) { s.linked = v };
+    db[$ "linkedTrack"] = function (s, v) { s.linkedTrack = v };
+    db[$ "keyframes"] = function (s, v) { s.keyframes = v };
+    db[$ "disabled"] = function (s, v) { s.disabled = v };
+    db[$ "spriteIndex"] = function (s, v) { s.spriteIndex = v };
+    db[$ "soundIndex"] = function (s, v) { s.soundIndex = v };
+    db[$ "emitterIndex"] = function (s, v) { s.emitterIndex = v };
+    db[$ "playbackMode"] = function (s, v) { s.playbackMode = v };
+    db[$ "imageIndex"] = function (s, v) { s.imageIndex = v };
+    db[$ "value"] = function (s, v) { s.value = v };
+    db[$ "colour"] = function (s, v) { s.colour = v };
+    db[$ "color"] = function (s, v) { s.color = v };
+    db[$ "curve"] = function (s, v) { s.curve = v };
+    db[$ "objectIndex"] = function (s, v) { s.objectIndex = v };
+    db[$ "text"] = function (s, v) { s.text = v };
+    db[$ "events"] = function (s, v) { s.events = v };
+    db[$ "event"] = function (s, v) { s.event = v };
+    db[$ "graphType"] = function (s, v) { s.graphType = v };
+    db[$ "iterations"] = function (s, v) { s.iterations = v };
+    db[$ "points"] = function (s, v) { s.points = v };
+    db[$ "posx"] = function (s, v) { s.posx = v };
+    db[$ "matrix"] = function (s, v) { s.matrix = v };
+    db[$ "posy"] = function (s, v) { s.posy = v };
+    db[$ "rotation"] = function (s, v) { s.rotation = v };
+    db[$ "scalex"] = function (s, v) { s.scalex = v };
+    db[$ "scaley"] = function (s, v) { s.scaley = v };
+    db[$ "gain"] = function (s, v) { s.gain = v };
+    db[$ "pitch"] = function (s, v) { s.pitch = v };
+    db[$ "width"] = function (s, v) { s.width = v };
+    db[$ "height"] = function (s, v) { s.height = v };
+    db[$ "imagespeed"] = function (s, v) { s.imagespeed = v };
+    db[$ "colormultiply"] = function (s, v) { s.colormultiply = v };
+    db[$ "colourmultiply"] = function (s, v) { s.colourmultiply = v };
+    db[$ "coloradd"] = function (s, v) { s.coloradd = v };
+    db[$ "colouradd"] = function (s, v) { s.colouradd = v };
+    db[$ "instanceID"] = function (s, v) { s.instanceID = v };
+    db[$ "track"] = function (s, v) { s.track = v };
+    db[$ "parent"] = function (s, v) { s.parent = v };
+    db[$ "objects_touched"] = function (s, v) { s.objects_touched = v };
+    db[$ "objects_collected"] = function (s, v) { s.objects_collected = v };
+    db[$ "traversal_time"] = function (s, v) { s.traversal_time = v };
+    db[$ "collection_time"] = function (s, v) { s.collection_time = v };
+    db[$ "gc_frame"] = function (s, v) { s.gc_frame = v };
+    db[$ "generation_collected"] = function (s, v) { s.generation_collected = v };
+    db[$ "num_generations"] = function (s, v) { s.num_generations = v };
+    db[$ "num_objects_in_generation"] = function (s, v) { s.num_objects_in_generation = v };
+    db[$ "ref"] = function (s, v) { s.ref = v };
 }

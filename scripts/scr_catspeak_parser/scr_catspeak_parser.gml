@@ -114,7 +114,8 @@ function CatspeakParser(lexer, builder) constructor {
             var value;
             if (
                 peeked == CatspeakToken.SEMICOLON ||
-                peeked == CatspeakToken.BRACE_RIGHT
+                peeked == CatspeakToken.BRACE_RIGHT ||
+                peeked == CatspeakToken.LET
             ) {
                 value = ir.createValue(undefined, lexer.getLocation());
             } else {
@@ -130,13 +131,19 @@ function CatspeakParser(lexer, builder) constructor {
             var value;
             if (
                 peeked == CatspeakToken.SEMICOLON ||
-                peeked == CatspeakToken.BRACE_RIGHT
+                peeked == CatspeakToken.BRACE_RIGHT ||
+                peeked == CatspeakToken.LET
             ) {
                 value = ir.createValue(undefined, lexer.getLocation());
             } else {
                 value = __parseExpression();
             }
             return ir.createBreak(value, lexer.getLocation());
+        } else if (peeked == CatspeakToken.THROW) {
+            lexer.next();
+            peeked = lexer.peek();
+            var value = __parseExpression();
+            return ir.createThrow(value, lexer.getLocation());
         } else if (peeked == CatspeakToken.DO) {
             lexer.next();
             ir.pushBlock(true);
@@ -206,7 +213,7 @@ function CatspeakParser(lexer, builder) constructor {
             __parseStatements("fun");
             return ir.popFunction();
         } else {
-            return __parseAssign();
+            return __parseCondition();
         }
     };
 
@@ -237,7 +244,7 @@ function CatspeakParser(lexer, builder) constructor {
     ///
     /// @return {Struct}
     static __parseAssign = function () {
-        var lhs = __parseOpLogical();
+        var lhs = __parseCatch();
         var peeked = lexer.peek();
         if (
             peeked == CatspeakToken.ASSIGN ||
@@ -257,28 +264,45 @@ function CatspeakParser(lexer, builder) constructor {
         }
         return lhs;
     };
+    
+    /// @ignore
+    ///
+    /// @return {Struct}
+    static __parseCatch = function () {
+        var result = __parseOpLogicalOR();
+        var peeked = lexer.peek();
+        if (peeked == CatspeakToken.CATCH) {
+            lexer.next();
+            ir.pushBlock();
+            var localRef = undefined;
+            if (lexer.next() == CatspeakToken.IDENT) {
+                var localName = lexer.getValue();
+                localRef = ir.allocLocal(localName, lexer.getLocation());
+            }
+            __parseStatements("catch");
+            var catchBlock_ = ir.popBlock();
+            return ir.createCatch(result, catchBlock_, localRef, lexer.getLocation());
+        } else {
+            return result;
+        }
+    };
 
     /// @ignore
     ///
     /// @return {Struct}
-    static __parseOpLogical = function () {
-        var result = __parseOpPipe();
+    static __parseOpLogicalOR = function () {
+        var result = __parseOpLogicalAND();
         while (true) {
             var peeked = lexer.peek();
-            if (peeked == CatspeakToken.AND) {
+            if (peeked == CatspeakToken.OR) {
                 lexer.next();
                 var lhs = result;
-                var rhs = __parseOpPipe();
-                result = ir.createAnd(lhs, rhs, lexer.getLocation());
-            } else if (peeked == CatspeakToken.OR) {
-                lexer.next();
-                var lhs = result;
-                var rhs = __parseOpPipe();
+                var rhs = __parseOpLogicalAND();
                 result = ir.createOr(lhs, rhs, lexer.getLocation());
             } else if (peeked == CatspeakToken.XOR) {
                 lexer.next();
                 var lhs = result;
-                var rhs = __parseOpPipe();
+                var rhs = __parseOpLogicalAND();
                 result = ir.createBinary(CatspeakOperator.XOR, lhs, rhs, lexer.getLocation());
             } else {
                 return result;
@@ -289,65 +313,38 @@ function CatspeakParser(lexer, builder) constructor {
     /// @ignore
     ///
     /// @return {Struct}
+    static __parseOpLogicalAND = function () {
+        var result = __parseOpPipe();
+        while (true) {
+            var peeked = lexer.peek();
+            if (peeked == CatspeakToken.AND) {
+                lexer.next();
+                var lhs = result;
+                var rhs = __parseOpPipe();
+                result = ir.createAnd(lhs, rhs, lexer.getLocation());
+            } else {
+                return result;
+            }
+        }
+    };
+
+    /// @ignore
+    ///
+    /// @return {Struct}
     static __parseOpPipe = function () {
-        var result = __parseOpBitwise();
+        var result = __parseOpEquality();
         while (true) {
             var peeked = lexer.peek();
             if (peeked == CatspeakToken.PIPE_RIGHT) {
                 lexer.next();
                 var lhs = result;
-                var rhs = __parseOpBitwise();
+                var rhs = __parseOpEquality();
                 result = ir.createCall(rhs, [lhs], lexer.getLocation());
             } else if (peeked == CatspeakToken.PIPE_LEFT) {
                 lexer.next();
                 var lhs = result;
-                var rhs = __parseOpBitwise();
-                result = ir.createCall(lhs, [rhs], lexer.getLocation());
-            } else {
-                return result;
-            }
-        }
-    };
-
-    /// @ignore
-    ///
-    /// @return {Struct}
-    static __parseOpBitwise = function () {
-        var result = __parseOpBitwiseShift();
-        while (true) {
-            var peeked = lexer.peek();
-            if (
-                peeked == CatspeakToken.BITWISE_AND ||
-                peeked == CatspeakToken.BITWISE_XOR ||
-                peeked == CatspeakToken.BITWISE_OR
-            ) {
-                lexer.next();
-                var op = __catspeak_operator_from_token(peeked);
-                var lhs = result;
-                var rhs = __parseOpBitwiseShift();
-                result = ir.createBinary(op, lhs, rhs, lexer.getLocation());
-            } else {
-                return result;
-            }
-        }
-    };
-
-    /// @ignore
-    ///
-    /// @return {Struct}
-    static __parseOpBitwiseShift = function () {
-        var result = __parseOpEquality();
-        while (true) {
-            var peeked = lexer.peek();
-            if (
-                peeked == CatspeakToken.SHIFT_LEFT ||
-                peeked == CatspeakToken.SHIFT_RIGHT
-            ) {
-                lexer.next();
-                var op = __catspeak_operator_from_token(peeked);
-                var lhs = result;
                 var rhs = __parseOpEquality();
-                result = ir.createBinary(op, lhs, rhs, lexer.getLocation());
+                result = ir.createCall(lhs, [rhs], lexer.getLocation());
             } else {
                 return result;
             }
@@ -380,7 +377,7 @@ function CatspeakParser(lexer, builder) constructor {
     ///
     /// @return {Struct}
     static __parseOpRelational = function () {
-        var result = __parseOpAdd();
+        var result = __parseOpBitwise();
         while (true) {
             var peeked = lexer.peek();
             if (
@@ -392,7 +389,7 @@ function CatspeakParser(lexer, builder) constructor {
                 lexer.next();
                 var op = __catspeak_operator_from_token(peeked);
                 var lhs = result;
-                var rhs = __parseOpAdd();
+                var rhs = __parseOpBitwise();
                 result = ir.createBinary(op, lhs, rhs, lexer.getLocation());
             } else {
                 return result;
@@ -400,6 +397,32 @@ function CatspeakParser(lexer, builder) constructor {
         }
     };
 
+
+    /// @ignore
+    ///
+    /// @return {Struct}
+    static __parseOpBitwise = function () {
+        var result = __parseOpAdd();
+        while (true) {
+            var peeked = lexer.peek();
+            if (
+                peeked == CatspeakToken.BITWISE_AND ||
+                peeked == CatspeakToken.BITWISE_XOR ||
+                peeked == CatspeakToken.BITWISE_OR ||
+                peeked == CatspeakToken.SHIFT_LEFT ||
+                peeked == CatspeakToken.SHIFT_RIGHT
+            ) {
+                lexer.next();
+                var op = __catspeak_operator_from_token(peeked);
+                var lhs = result;
+                var rhs = __parseOpAdd();
+                result = ir.createBinary(op, lhs, rhs, lexer.getLocation());
+            } else {
+                return result;
+            }
+        }
+    };
+    
     /// @ignore
     ///
     /// @return {Struct}
@@ -453,6 +476,7 @@ function CatspeakParser(lexer, builder) constructor {
         var peeked = lexer.peek();
         if (
             peeked == CatspeakToken.NOT ||
+            peeked == CatspeakToken.BITWISE_NOT ||
             peeked == CatspeakToken.SUBTRACT ||
             peeked == CatspeakToken.PLUS
         ) {
@@ -569,6 +593,9 @@ function CatspeakParser(lexer, builder) constructor {
         } else if (peeked == CatspeakToken.SELF) {
             lexer.next();
             return ir.createSelf(lexer.getLocation());
+        } else if (peeked == CatspeakToken.OTHER) {
+            lexer.next();
+            return ir.createOther(lexer.getLocation());
         } else {
             return __parseGrouping();
         }

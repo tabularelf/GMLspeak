@@ -149,6 +149,10 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"^",				CatspeakToken.BITWISE_XOR,
 		"|",				CatspeakToken.BITWISE_OR,
 		"self",				CatspeakToken.SELF,
+        "other",			CatspeakToken.OTHER,
+        "try",              CatspeakToken.DO,
+        "catch",            CatspeakToken.CATCH,
+        "finally",          GMLspeakToken.FINALLY,
         "toString",         CatspeakToken.IDENT,
 		
 		// Implemented as comments since these kind of act like two separate comments.
@@ -191,10 +195,6 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	);
 	
 	interface.exposeDynamicConstant(
-		"other", function() {
-			return global.__catspeakGmlOther ?? sharedGlobal;	
-		},
-		
 		// Exists as getters only
 		"room", 
 		function() {return room;},

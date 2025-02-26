@@ -3,6 +3,18 @@ var _t = get_timer();
 catspeak = new CatspeakEnvironment();
 show_debug_message((get_timer() - _t) / 1000);
 
+
+var _str = @'
+    show_debug_message("wololo")
+    show_debug_message(Object1);
+    instance_create_depth(32, 32, 0, obj_test);
+';
+
+envTest = new GMLspeakEnvironment();
+envTest.interface.exposeEverythingIDontCareIfModdersCanEditUsersSaveFilesJustLetMeDoThis = true;
+var _program = envTest.compile(envTest.parseString(_str));
+catspeak_execute(_program);
+
 var _t = get_timer();
 gmlspeak = new GMLspeakEnvironment();
 gmlspeak.enableWritingRoom(true);
@@ -479,11 +491,15 @@ var _code = @'
 ';
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
+gmlspeak.interface.exposeFunction("buffer_create", buffer_create, "buffer_load", buffer_load, "buffer_exists", buffer_exists, "buffer_delete", buffer_delete, "buffer_write", buffer_read);
 
-var program = gmlspeak.compileGML(gmlspeak.parseString(@"
-    var surf = surface_create(128, 128);
-    surface_set_target(surf) {
-    
-        surface_reset_target();
-    }
-"));
+var _code = "try {var buff = buffer_load(\"123\"); buffer_read(buff, buffer_u8);} catch(_ex) {show_debug_message(\"buffer doesn't exist!\"); return \"Happy birthday Sid!\"}";
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(program());
+
+var program = gmlspeak.compileGML(gmlspeak.parseString("argument[0][2][? \"foo\"][$ \"bar\"].value"));
+var array = [0, 0, ds_map_create()];
+array[2][? "foo"] = {bar: {value: "Hi :3"}};
+
+show_message(program(array));

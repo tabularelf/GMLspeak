@@ -105,6 +105,8 @@ enum CatspeakToken {
     IF = 43,
     /// The `else` keyword.
     ELSE = 44,
+    /// The `catch` keyword.
+    CATCH = 66,
     /// The `while` keyword.
     WHILE = 45,
     /// The `for` keyword.
@@ -133,6 +135,8 @@ enum CatspeakToken {
     CONTINUE = 53,
     /// The `return` keyword.
     RETURN = 54,
+    /// The `throw` keyword.
+    THROW = 67,
     /// The `new` keyword.
     NEW = 55,
     /// The `impl` keyword.
@@ -147,6 +151,10 @@ enum CatspeakToken {
     ///
     /// @experimental
     PARAMS = 58,
+    /// The `params_count` keyword.
+    ///
+    /// @experimental
+    PARAMS_COUNT = 65,
     /// Represents a variable name.
     IDENT = 59,
     /// Represents a GML value. This could be one of:
@@ -167,16 +175,12 @@ enum CatspeakToken {
     /// Represents any other unrecognised character.
     ///
     /// @remark
-    ///   If the compiler encounters a token of this type, it will typical
+    ///   If the compiler encounters a token of this type, it will typically
     ///   raise an exception. This likely indicates that a Catspeak script has
     ///   a syntax error somewhere.
     OTHER = 64,
-    /// The `params_count` keyword.
-    ///
-    /// @experimental
-    PARAMS_COUNT = 65,
     /// @ignore
-    __SIZE__ = 66,
+    __SIZE__ = 68,
 }
 
 /// @ignore
@@ -1053,6 +1057,7 @@ function __catspeak_keywords_create() {
     keywords[$ "do"] = CatspeakToken.DO;
     keywords[$ "if"] = CatspeakToken.IF;
     keywords[$ "else"] = CatspeakToken.ELSE;
+    keywords[$ "catch"] = CatspeakToken.CATCH;
     keywords[$ "while"] = CatspeakToken.WHILE;
     keywords[$ "for"] = CatspeakToken.FOR;
     keywords[$ "loop"] = CatspeakToken.LOOP;
@@ -1064,9 +1069,11 @@ function __catspeak_keywords_create() {
     keywords[$ "break"] = CatspeakToken.BREAK;
     keywords[$ "continue"] = CatspeakToken.CONTINUE;
     keywords[$ "return"] = CatspeakToken.RETURN;
+    keywords[$ "throw"] = CatspeakToken.THROW;
     keywords[$ "new"] = CatspeakToken.NEW;
     keywords[$ "impl"] = CatspeakToken.IMPL;
     keywords[$ "self"] = CatspeakToken.SELF;
+    keywords[$ "other"] = CatspeakToken.OTHER;
     return keywords;
 }
 
