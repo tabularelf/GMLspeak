@@ -493,7 +493,7 @@ var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
 gmlspeak.interface.exposeFunction("buffer_create", buffer_create, "buffer_load", buffer_load, "buffer_exists", buffer_exists, "buffer_delete", buffer_delete, "buffer_write", buffer_read);
 
-var _code = "try {var buff = buffer_load(\"123\"); buffer_read(buff, buffer_u8);} catch(_ex) {show_debug_message(\"buffer doesn't exist!\"); return \"Happy birthday Sid!\"}";
+var _code = "try {var buff = buffer_load(\"123\"); return buffer_read(buff, buffer_u8);} catch(_ex) {show_debug_message(\"buffer doesn't exist!\"); return \"Happy birthday Sid!\"}";
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program());
