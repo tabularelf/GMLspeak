@@ -1,4 +1,4 @@
-# GMLspeak v1.1.1
+# GMLspeak v1.2.0
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)! (**Experimental currently!!!**)
 
 # Supported Features
@@ -15,6 +15,7 @@
 - Unlimited non-named Arguments (via Catspeak)
 - Accessors
 - The ability to allow writing to specific IO/room properties
+- try/catch
 
 # To be added
 - methods with "global" scope self assign as "undefined" instead.
