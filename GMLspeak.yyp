@@ -12,6 +12,7 @@
     {"id":{"name":"scr_catspeak_ir","path":"scripts/scr_catspeak_ir/scr_catspeak_ir.yy",},"order":1,},
     {"id":{"name":"is_gmlspeak","path":"scripts/is_gmlspeak/is_gmlspeak.yy",},"order":5,},
     {"id":{"name":"Object1","path":"objects/Object1/Object1.yy",},"order":0,},
+    {"id":{"name":"GMLspeakCodegen","path":"scripts/GMLspeakCodegen/GMLspeakCodegen.yy",},"order":8,},
     {"id":{"name":"scr_catspeak_environment","path":"scripts/scr_catspeak_environment/scr_catspeak_environment.yy",},"order":4,},
     {"id":{"name":"Room1","path":"rooms/Room1/Room1.yy",},"order":1,},
     {"id":{"name":"Font1","path":"fonts/Font1/Font1.yy",},"order":14,},

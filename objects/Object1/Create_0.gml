@@ -10,7 +10,7 @@ var _str = @'
     instance_create_depth(32, 32, 0, obj_test);
 ';
 
-envTest = new GMLspeakEnvironment();
+var envTest = new GMLspeakEnvironment();
 envTest.interface.exposeEverythingIDontCareIfModdersCanEditUsersSaveFilesJustLetMeDoThis = true;
 var _program = envTest.compile(envTest.parseString(_str));
 catspeak_execute(_program);
@@ -502,4 +502,38 @@ var program = gmlspeak.compileGML(gmlspeak.parseString("argument[0][2][? \"foo\"
 var array = [0, 0, ds_map_create()];
 array[2][? "foo"] = {bar: {value: "Hi :3"}};
 
-show_message(program(array));
+show_debug_message(program(array));
+
+
+try {
+    var env = new GMLspeakEnvironment();
+    env.interface.compileFlags.checkForVariables = true;
+    //env.interface.compileFlags.useVariableHash = true;
+    var _code = @"
+        rawr = 42;
+        return foobar();
+    ";
+    var program = env.compileGML(env.parseString(_code));
+    program();
+} catch(_ex) {
+    show_debug_message(_ex.message);   
+}
+
+
+// EXPERIMENTAL
+gmlspeak.interface.compileFlags.pureFunctions = {
+    "string_lower": [is_string],
+    "string_upper": [is_string],
+    "real": function(v) {return !is_undefined(v)},
+};
+
+gmlspeak.interface.compileFlags.pureDynamicConstants = {
+    "os_type": true,
+};
+
+gmlspeak.interface.exposeFunction("string_lower", string_lower);
+gmlspeak.interface.exposeFunction("string_upper", string_upper);
+gmlspeak.interface.exposeFunction("real", real);
+var _code = "return real(os_type);";
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(program());

@@ -2,9 +2,11 @@
 function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.parserType = GMLspeakParser;
 	self.lexerType = GMLspeakLexer;
+    self.codegenType = GMLspeakCodegen;
 	self.currentFilename = "unknown";
 	self.canWriteRoomProperties = false;
 	enableSharedGlobal(true);
+    interface.compileFlags = {};
 
 	static enableWritingRoom = function(_value) {
 		if (_value) {
