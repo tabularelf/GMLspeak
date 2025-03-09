@@ -68,29 +68,6 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         }
         return interface.isDynamicConstant(name);
     }
-    
-    
-    /// @ignore
-    static __pureFunctionLookUp = function(name) {
-        return interface.compileFlags.pureFunctions[$ name]; 
-    }
-    /// @ignore
-    static __isPureFunction = function (func) {
-        var index = method_get_index(func);
-		var callable = (index == __catspeak_expr_call__ || 
-                index == __catspeak_expr_call_0__ ||
-                index == __catspeak_expr_call_1__ ||
-                index == __catspeak_expr_call_2__ ||
-                index == __catspeak_expr_call_3__ ||
-                index == __catspeak_expr_call_4__ ||
-                index == __catspeak_expr_call_5__ 
-            ) ? 
-            (method_get_self(func)[$ "compileTimeExecutable"] ?? false) : false;
-		if (!callable) {
-			callable = (method_get_index(func) == __catspeak_expr_value__)	
-		}	
-		return callable;
-	}
 
     /// Generates the code for a single term from the supplied Catspeak IR.
     ///
@@ -657,55 +634,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
             }
             
             return result;
-        } else {
-            // Handle pure functions
-            if (is_struct(interface.compileFlags[$ "pureFunctions"])) {
-                var conditions = interface.compileFlags.pureFunctions[$ term.callee.name];
-                if (!is_undefined(conditions)) {
-                    if (!is_array(conditions)) {
-                        if (is_method(conditions) || script_exists(conditions)) {
-                            conditions = [conditions];
-                        }
-                    }
-                    isCompileTimeCallable = is_array(conditions);
-                    var func = interface.get(term.callee.name);
-                    
-                    if (isCompileTimeCallable) {
-                        var len = array_length(exprs);
-                        var executeArgs = array_create(len);
-                        for(var i = 0; i < len; ++i) {
-                            var callable = __isPureFunction(exprs[i]);
-                            isCompileTimeCallable = callable;
-                            if (callable) {
-				    	        executeArgs[i] = exprs[i]();
-				    	        var conditionCheck = conditions[i % (len > 1 ? len-1 : 1)];
-				    	        if (!conditionCheck(executeArgs[i])) {
-				    		       // Not a normal call
-				    		        conditionFailed = true;
-				    		        break;
-                                }
-				            } else {
-				    	       conditionFailed = true;
-				    	       break;	   
-                            }
-                        }
-                    }
-                    
-                    if (!conditionFailed) {
-                        var self_ = method_get_self(func) ?? self;
-                        with(self_) {
-				    	    var results_ = script_execute_ext(method_get_index(func), executeArgs);
-                        }
-				    	return __compileValue(ctx, {
-				    		value: results_,
-				    		dbg: 0,
-				    		type: 0,
-				    	});
-				    }
-                }
-            }
-            
-            
+        } else { 
             var callee = __compileTerm(ctx, term.callee);
             var func = __catspeak_expr_call__;
             switch (array_length(exprs)) {
@@ -865,8 +794,8 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
             );
         }
         
-         var useVariableHash = (interface.compileFlags[$ "useVariableHash"] == true);
-         var checkForVariables = (interface.compileFlags[$ "checkForVariables"] == true);
+         var useVariableHash = (__getCompileFlag("useVariableHash") == true);
+         var checkForVariables = (__getCompileFlag("checkForVariables") == true);
         
         var getter = useVariableHash ? 
             __gmlspeak_expr_index_get_hash__ : 
@@ -930,18 +859,6 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
             }, __catspeak_expr_value__);
             if (__isDynamicConstant(name)) {
                 // dynamic constant
-                
-                // pure dynamic constant
-                if (is_struct(interface.compileFlags[$ "pureDynamicConstants"])) {
-                    if (interface.compileFlags.pureDynamicConstants[$ name] == true) {
-                        return __compileValue(ctx, {
-				    		value: __get(name)(),
-				    		dbg: 0,
-				    		type: 0,
-				    	});
-                    }
-                }
-                
                 return method({
                     dbgError : __dbgTerm(term, "is not a function"),
                     callee : _callee,
@@ -1149,6 +1066,19 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         db[@ CatspeakAssign.PLUS] = __catspeak_expr_global_set_plus__;
         return db;
     })();
+    
+    /// @ignore
+    static __hasCompileFlag = function(flagName) {
+        return variable_struct_exists(interface.compileFlags, flagName);   
+    }
+    
+    static __getCompileFlag = function(flagName) {
+        if (!__hasCompileFlag(flagName)) {
+            return undefined;
+        }
+        
+        return interface.compileFlags[$ flagName];   
+    }
 
     /// @ignore
     static __dbgTerm = function (term, msg="is invalid in this context") {
