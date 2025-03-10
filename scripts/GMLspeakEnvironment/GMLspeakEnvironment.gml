@@ -7,7 +7,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.canWriteRoomProperties = false;
 	enableSharedGlobal(true);
     interface.compileFlags = {
-        checkForVariables: true,
+        checkForVariables: false,
         useVariableHash: false,
     };
 
