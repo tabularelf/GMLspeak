@@ -6,7 +6,10 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	self.currentFilename = "unknown";
 	self.canWriteRoomProperties = false;
 	enableSharedGlobal(true);
-    interface.compileFlags = {};
+    interface.compileFlags = {
+        checkForVariables: true,
+        useVariableHash: false,
+    };
 
 	static enableWritingRoom = function(_value) {
 		if (_value) {

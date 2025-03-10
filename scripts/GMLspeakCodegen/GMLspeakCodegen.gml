@@ -23,6 +23,14 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
     }
     /// @ignore
     self.interface = interface;
+        
+    // Fetching compile flags
+    /// @ignore
+    useVariableHash = (__getCompileFlag("useVariableHash") == true);
+    /// @ignore
+    checkForVariables = (__getCompileFlag("checkForVariables") == true);
+
+    
     /// @ignore
     self.functions = ir.functions;
     /// @ignore
@@ -35,7 +43,6 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
     self.program = __compileFunctions(ir.entryPoints);
     /// @ignore
     self.finalised = false;
-
     /// @ignore
     ///
     /// @param {String} name
@@ -603,8 +610,6 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         }
         var dbgError = __dbgTerm(term.callee, "is not a function");
         if (term.callee.type == CatspeakTerm.INDEX) {
-            var useVariableHash = (interface.compileFlags[$ "useVariableHash"] == true);
-            var checkForVariables = (interface.compileFlags[$ "checkForVariables"] == true);
             if (CATSPEAK_DEBUG_MODE) {
                 __catspeak_check_arg_struct("term.callee", term.callee,
                     "collection", undefined,
@@ -703,7 +708,6 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         var target = term.target;
         var targetType = target.type;
         var value = __compileTerm(ctx, term.value);
-        var useVariableHash = (interface.compileFlags[$ "useVariableHash"] == true);
         if (targetType == CatspeakTerm.INDEX) {
             if (CATSPEAK_DEBUG_MODE) {
                 __catspeak_check_arg_struct("term.target", target,
@@ -793,9 +797,6 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 "key", undefined
             );
         }
-        
-         var useVariableHash = (__getCompileFlag("useVariableHash") == true);
-         var checkForVariables = (__getCompileFlag("checkForVariables") == true);
         
         var getter = useVariableHash ? 
             __gmlspeak_expr_index_get_hash__ : 

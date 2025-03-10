@@ -302,7 +302,7 @@ var struct = {
 return struct[$ "foo"]';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
-struct = program(self);
+struct = catspeak_execute(program);
 show_debug_message(json_stringify(struct));
 
 //programKeyboard = gmlspeak.compileGML(gmlspeak.parseString(_code));
@@ -479,13 +479,13 @@ show_debug_message("delete test");
 var _code = @'
     var foo = "bar";
     show_debug_message(foo);
-    delete foo;
+    // delete foo;
     show_debug_message(foo);
     
     global.foo = {bar: {rawr: "32", rawr2: ds_map_create()}}
     global.foo.bar.rawr2[? "ree"] = 32;
     show_debug_message(global.foo);
-    delete global.foo.bar.rawr2[? "ree"];
+    // delete global.foo.bar.rawr2[? "ree"];
     show_debug_message(global.foo);
     show_debug_message(global.foo.bar.rawr2[? "ree"]);
 ';
@@ -521,19 +521,16 @@ try {
 
 
 // EXPERIMENTAL
-gmlspeak.interface.compileFlags.pureFunctions = {
-    "string_lower": [is_string],
-    "string_upper": [is_string],
-    "real": function(v) {return !is_undefined(v)},
-};
+//gmlspeak.interface.compileFlags.pureFunctions = {
+//    "string_lower": [is_string],
+//    "string_upper": [is_string],
+//    "real": function(v) {return !is_undefined(v)},
+//};
+//
+//gmlspeak.interface.compileFlags.pureDynamicConstants = {
+//    "os_type": true,
+//};
 
-gmlspeak.interface.compileFlags.pureDynamicConstants = {
-    "os_type": true,
-};
-
-gmlspeak.interface.exposeFunction("string_lower", string_lower);
-gmlspeak.interface.exposeFunction("string_upper", string_upper);
-gmlspeak.interface.exposeFunction("real", real);
-var _code = "return real(os_type);";
+var _code = "var i = 0; var j = 1; if (i == j) return 32; else return 34; ";
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program());
