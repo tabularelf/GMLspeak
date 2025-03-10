@@ -337,7 +337,12 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     ///
     /// @param {String} keyword
     /// @return {Struct}
-    static __parseStatements = function (keyword) {
+    static __parseStatements = function(keyword, strict = false) {
+        if (!strict) && (lexer.peek() != CatspeakToken.BRACE_LEFT) {
+            __parseStatement();
+            lexer.next();
+            return;
+        }
         if (lexer.next() != CatspeakToken.BRACE_LEFT) {
             __ex("expected opening '{' at the start of '", keyword, "' block");
         }
