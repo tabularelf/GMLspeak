@@ -531,6 +531,17 @@ try {
 //    "os_type": true,
 //};
 
-var _code = "var i = 0; var j = 1; if (i == j) return 32; else return 34; ";
+gmlspeak.interface.exposeConstant("hello", "hello, world!");
+gmlspeak.interface.exposeFunction("surface_create", surface_create, "surface_set_target", surface_set_target, "surface_reset_target", surface_reset_target, "surface_free", surface_free, "draw_text", draw_text);
+var _code = @"
+var surf = surface_create(128, 128);
+surface_set_target(surf) {
+    show_debug_message(1)
+    draw_text(8, 8, hello);
+    surface_reset_target();
+    show_debug_message(2)
+}
+// surface_free(surf);
+var i = 0; var j = 1; if (i == j) return 32; else return 34;";
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program());

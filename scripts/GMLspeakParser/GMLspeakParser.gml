@@ -118,6 +118,9 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             lexer.next();
             return ir.createAssign(CatspeakAssign.VANILLA, __parseIndex(), ir.createValue(undefined), lexer.getLocation());
         } else if (peeked = CatspeakToken.BRACE_LEFT) {
+            // This is a bug. I suspect that the IR isn't liking what is going on here.
+            // Well, hacks are hacks!
+            ir.createStatement(ir.createValue(-1));
 			ir.pushBlock(true);
 			__parseStatements("block", true);
 			result = ir.popBlock(lexer.getLocation());
@@ -338,12 +341,13 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     /// @param {String} keyword
     /// @return {Struct}
     static __parseStatements = function(keyword, strict = false) {
-        if (!strict) && (lexer.peek() != CatspeakToken.BRACE_LEFT) {
+        var peeked = lexer.next()
+        if (!strict) && (peeked != CatspeakToken.BRACE_LEFT) {
             __parseStatement();
             lexer.next();
             return;
         }
-        if (lexer.next() != CatspeakToken.BRACE_LEFT) {
+        if (peeked != CatspeakToken.BRACE_LEFT) {
             __ex("expected opening '{' at the start of '", keyword, "' block");
         }
         while (__isNot(CatspeakToken.BRACE_RIGHT)) {
