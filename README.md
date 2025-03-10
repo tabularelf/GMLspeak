@@ -1,4 +1,4 @@
-# GMLspeak v1.2.0
+# GMLspeak v1.2.1
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)! (**Experimental currently!!!**)
 
 # Supported Features
