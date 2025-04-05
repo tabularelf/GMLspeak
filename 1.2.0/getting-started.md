@@ -31,6 +31,7 @@ GMLspeak supports a majority of GML-like syntax and behaviours. The following yo
 - do until loops
 - repeat loops
 - while loops
+- exit (similar to `return;`)
 - nullish coalescence `value ?? false`/`value ??= buffer_create(1, buffer_grow, 1)` 
 - tenary operator `value > 4 ? true : false;`
 - `with(scope)` support
@@ -40,6 +41,10 @@ GMLspeak supports a majority of GML-like syntax and behaviours. The following yo
 - Support for `global` variables (which includes a custom `global` struct to separate from native GM global)
 - `try/catch` (no `finally` at this time)
 
+GMLspeak will not support the following:
+- Defining Macros via code (Requires preprocessor implementation by end user. Exposing constants is however supported)
+- Defining Enums via code (Requires preprocessor implementation by end user. Exposing constants is however supported. (Enums will need to be exposed as a struct, soft limitation))
+- Static Variables 
 
 ## Compiling your first GMLspeak program
 Anything not covered here in terms of use case, should be referred to [Catspeaks documentation](https://www.katsaii.com/catspeak-lang/3.2.0/hom-welcome.html) instead.
