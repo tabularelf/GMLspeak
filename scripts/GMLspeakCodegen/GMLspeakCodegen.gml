@@ -821,6 +821,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.collection, "is not indexable"),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
+				hash_ : useVariableHash ? variable_get_hash(term.key.value) : -1,
             }, getter);
         
         // Adds variable check
@@ -829,7 +830,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.key, "is not defined."),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
-                hash_: useVariableHash ? variable_get_hash(term.key) : -1,
+                hash_: useVariableHash ? variable_get_hash(term.key.value) : -1,
                 result: result,
             }, useVariableHash ? 
                     __gmlspeak_expr_index_check_hash__ : 

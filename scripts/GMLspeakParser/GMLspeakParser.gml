@@ -329,6 +329,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			
 			
             __parseStatements("fun");
+			ir.createStatement(ir.createValue(undefined)); // Force return `undefined`
 			__popFunctionName();
             return ir.createCall(ir.createGet("method"), [ir.createSelf(), ir.popFunction()]);
         } else {
