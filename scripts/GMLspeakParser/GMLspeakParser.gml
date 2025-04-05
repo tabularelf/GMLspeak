@@ -60,6 +60,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
     static update = function () {
         if (lexer.peek() == CatspeakToken.EOF) {
             if (!finalised) {
+				ir.createStatement(ir.createValue(undefined)); // Force return `undefined`
                 ir.popFunction();
 				__popFunctionName();
                 finalised = true;
@@ -149,7 +150,11 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 value = __parseExpression();
             }
             return ir.createReturn(value, lexer.getLocation());
-        } else if (peeked == CatspeakToken.CONTINUE) {
+        } else if (peeked == GMLspeakToken.EXIT) {
+			lexer.next();
+			var value = ir.createValue(undefined, lexer.getLocation());
+			return ir.createReturn(value, lexer.getLocation());
+		} else if (peeked == CatspeakToken.CONTINUE) {
             lexer.next();
             return ir.createContinue(lexer.getLocation());
         } else if (peeked == CatspeakToken.BREAK) {
@@ -329,6 +334,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 			
 			
             __parseStatements("fun");
+			ir.createStatement(ir.createValue(undefined)); // Force return `undefined`
 			__popFunctionName();
             return ir.createCall(ir.createGet("method"), [ir.createSelf(), ir.popFunction()]);
         } else {

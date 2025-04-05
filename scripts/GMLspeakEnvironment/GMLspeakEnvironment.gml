@@ -195,6 +195,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		"_GMFUNCTION_",		GMLspeakToken.__GMFUNCTION__,
 		"argument",			CatspeakToken.PARAMS,
 		"argument_count",	CatspeakToken.PARAMS_COUNT,
+		"exit",				GMLspeakToken.EXIT,
 		// TODO: Make delete work with other accessors
 		//"delete",           GMLspeakToken.DELETE,
 	);
@@ -213,7 +214,7 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 		function() {return keyboard_string;},
 	);
 	
-	interface.exposeConstant("global", sharedGlobal);
+	interface.exposeDynamicConstant("global", function() {return sharedGlobal;});
 	
 	interface.exposeMethod( 
 		"method",

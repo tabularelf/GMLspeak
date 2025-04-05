@@ -718,13 +718,28 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
             var func = useVariableHash ? 
                         __assignLookupIndexHash[term.assignType] :
                         __assignLookupIndex[term.assignType];
-            return method({
+            var result = method({
                 dbgError : __dbgTerm(target.collection, "is not indexable"),
                 collection : __compileTerm(ctx, target.collection),
                 key : __compileTerm(ctx, target.key),
                 hash_ : useVariableHash ? variable_get_hash(target.key) : -1,
                 value : value,
             }, func);
+			
+			if (checkForVariables) && (term.assignType != CatspeakAssign.VANILLA) {
+				return method({
+					dbgError : __dbgTerm(target.key, "is not defined."),
+					collection : __compileTerm(ctx, target.collection),
+					key : __compileTerm(ctx, target.key),
+					hash_: useVariableHash ? variable_get_hash(target.key) : -1,
+					result: result,
+				}, useVariableHash ? 
+						__gmlspeak_expr_index_check_hash__ : 
+						__gmlspeak_expr_index_check__
+				);
+			}
+
+			return result;	
         } else if (targetType == CatspeakTerm.PROPERTY) {
             if (CATSPEAK_DEBUG_MODE) {
                 __catspeak_check_arg_struct("term.target", target,
@@ -806,6 +821,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.collection, "is not indexable"),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
+				hash_ : useVariableHash ? variable_get_hash(term.key.value) : -1,
             }, getter);
         
         // Adds variable check
@@ -814,7 +830,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.key, "is not defined."),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
-                hash_: useVariableHash ? variable_get_hash(term.key) : -1,
+                hash_: useVariableHash ? variable_get_hash(term.key.value) : -1,
                 result: result,
             }, useVariableHash ? 
                     __gmlspeak_expr_index_check_hash__ : 
