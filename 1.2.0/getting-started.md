@@ -32,6 +32,8 @@ add = function(a, b) {
 ```
 And `value` will be returned automatically.
 
+!> If you wish to throw an exception on variables that don't exist, there is a [compile flag](gmlspeakenvironment.md?id=compile-flags) for this.
+
 ### All variables not defined will just return undefined.
 Catspeak will return all values as is, even ones that aren't set.
 So if you have a piece of code that does this
@@ -48,19 +50,19 @@ GMLspeak supports a majority of GML-like syntax and behaviours. The following yo
 - for loops
 - do until loops
 - repeat loops
+- while loops
 - nullish coalescence `value ?? false`/`value ??= buffer_create(1, buffer_grow, 1)` 
 - tenary operator `value > 4 ? true : false;`
-- Custom method handler for Catspeak/GMLspeak interop. (referred to as `method` in GMLspeak)
-- Partial `with(scope)` support. (Does not cover `all` and object indexes)
+- `with(scope)` support
 - Automatic methodizing of functions on creation.
 - Comment blocks `/* Secret little message */`
-- Almost every single GML constant
-- Proper `self`/`other` scope
+- Almost every single GML constant, up to 2024.8
 - Support for `global` variables (which includes a custom `global` struct to separate from native GM global)
+- `try/catch` (no `finally` at this time)
 
 
 ## Compiling your first GMLspeak program
-Anything not covered here in terms of use case, should be referred to [Catspeaks documentation](https://www.katsaii.com/catspeak-lang/3.0.2/hom-welcome.html) instead.
+Anything not covered here in terms of use case, should be referred to [Catspeaks documentation](https://www.katsaii.com/catspeak-lang/3.2.0/hom-welcome.html) instead.
 
 To start using GMLspeak, the first thing you need to do is create the environment itself. GMLspeak doesn't do this automatically, so you will need to specify it.
 ```gml
@@ -94,16 +96,21 @@ This same struct is also used to compile all GMLspeak programs (and by extension
 program = global.gmlSpeak.compileGML(ast);
 ```
 Now that our program is compiled and ran successfully, we can move onto the next step. Executing it!
-Unlike how Catspeak works, the first two arguments from a program will **always** be `self` and `other`. These are the scopes that a program will interpret `self` and `other` with.
-Passing in no scopes for either one will default to the internal `global` struct. Normal execution is `program(self, other, ...)`.
-Any arguments passed afterwards will be passed off to `Catspeak` as per normal. 
-
-!> While this applies to the head program, any other functions that were created from within, will be automatically method wrapped via GMLspeaks internal method mechanic. Mirroring GML behaviour of functions declared as variables or passed into functions as arguments. And therefore do not need `self` or `other` to be passed as the first arguments.
+We can execute any programs directly.
 ```gml
-program(self, undefined);
+program();
 ```
 Now we should get this in the output window
 ```
 Hello world!
 ```
 Congratulations! You've made your first program in GMLspeak!
+
+Final note. 
+
+This will actually execute from the `global` scope, but we may not want to do that. Fortunately, Catspeak offers a way of switching the self scope!
+```gml
+catspeak_execute(program);
+// Or
+catspeak_execute_ext(program, some_scope);
+```

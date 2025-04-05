@@ -2,4 +2,4 @@
 - [Getting started](getting-started.md)
 ---
 **API Reference**
-- [General](general.md)
+- [GMLspeak Environment](gmlspeakenvironment.md)

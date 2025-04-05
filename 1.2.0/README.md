@@ -25,7 +25,7 @@ GMLspeak is a parser/lexer addon for [Catspeak (made by katsaii)](https://www.ka
 
 |  Windows  |  MacOSX  |  Linux  |  iOS  |  Android  |  HTML5  |  Opera GX  |  Console  |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| ✔ | ✔ | ✔ | ✔ | ✔ | ✔  | ✔ | ✔ |
+| ✔ | ✔ | ✔ | ✔ | ✔ | ❓  | ✔ | ✔ |
 
 
 # License
