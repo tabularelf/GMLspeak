@@ -519,7 +519,7 @@ try {
     show_debug_message(_ex.message);   
 }
 
-var _code = "exit; \"bar\"";
+var _code = "foo = \"bar\"; exit;";
 var program = env.compileGML(env.parseString(_code));
 program();
 
