@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "is_gmlspeak",
+  "name": "gmlspeak_force_init",
   "isDnD": false,
   "isCompatibility": false,
   "parent": {
