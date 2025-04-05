@@ -3,7 +3,7 @@
 ## Installing
 1. Download GMLspeak's .yymps from [releases!](https://github.com/tabularelf/GMLspeak/releases)
 2. With your GameMaker Project, drag the .yymps (or at the top go to Tools -> Import Local Package)
-3. Press "Add All" and press "Import". (Unles you are using a different version of Catspeak that GMLspeak provides for you. As of writing, it uses Catspeak v3.0.2)
+3. Press "Add All" and press "Import". (Unles you are using a different version of Catspeak that GMLspeak provides for you. As of writing, it uses Catspeak v3.2.0)
 
 ## Updating to a new version
 
@@ -12,27 +12,7 @@
 
 ## Coming from GML
 
-As GMLspeak is an addon of Catspeak, there is some specific differences between GML and Catspeak. And while GMLspeak aims to maintain a majority of compatibility, it does offer some slight differents. The following is noted.
-
-### Implicit Return
-Catspeak supports implicit return. Meaning that any function or script does not need to specify `return value`. <br>
-So instead of doing this
-```gml
-add = function(a, b) {
-	var value = a + b;
-	return value;
-}
-```
-Instead you can just define `value;` separately.
-```gml
-add = function(a, b) {
-	var value = a + b;
-	value;
-}
-```
-And `value` will be returned automatically.
-
-!> If you wish to throw an exception on variables that don't exist, there is a [compile flag](gmlspeakenvironment.md?id=compile-flags) for this.
+As GMLspeak is an addon of [Catspeak](https://www.katsaii.com/catspeak-lang/), there is some specific differences between GML and Catspeak. And while GMLspeak aims to maintain a majority of compatibility, it does offer some slight differences. The following is noted.
 
 ### All variables not defined will just return undefined.
 Catspeak will return all values as is, even ones that aren't set.
@@ -42,7 +22,7 @@ show_debug_message(name);
 ```
 And `name` is not set, it will return `undefined`.
 
-!> While I could technically support it so it throws an exception, that is something best left up to Catspeak to handle.
+!> If you wish to instead throw an exception on variables that don't exist, there is a [compile flag](gmlspeakenvironment.md?id=compile-flags) for this.
 
 ## Using GMLspeak
 GMLspeak supports a majority of GML-like syntax and behaviours. The following you can use:
