@@ -519,6 +519,10 @@ try {
     show_debug_message(_ex.message);   
 }
 
+var _code = "exit; \"bar\"";
+var program = env.compileGML(env.parseString(_code));
+program();
+
 
 // EXPERIMENTAL
 //gmlspeak.interface.compileFlags.pureFunctions = {
