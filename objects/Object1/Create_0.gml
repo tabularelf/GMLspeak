@@ -541,7 +541,7 @@ show_debug_message(global.foobar());
 //};
 
 gmlspeak.interface.exposeConstant("hello", "hello, world!");
-gmlspeak.interface.exposeFunction("surface_create", surface_create, "surface_set_target", surface_set_target, "surface_reset_target", surface_reset_target, "surface_free", surface_free, "draw_text", draw_text);
+gmlspeak.interface.exposeFunction("irandom", irandom, "ord", ord, "surface_create", surface_create, "surface_set_target", surface_set_target, "surface_reset_target", surface_reset_target, "surface_free", surface_free, "draw_text", draw_text);
 var _code = @"
 var surf = surface_create(128, 128);
 surface_set_target(surf) {
@@ -555,16 +555,25 @@ var i = 0; var j = 1; if (i == j) return 32; else return 34;";
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program());
 
-var _code = @"
-sum = function(a, b = 1) {
-	return a + b;
+var _code = 
+string_concat("sum = function(a, b = irandom(69)) {",
+	"return a + b;",
+"}",
+
+"show_debug_message(sum(1));",
+"show_debug_message(sum(1, undefined));",
+"show_debug_message(sum(41));",
+"show_debug_message(sum(2, 2));",
+@"
+make_struct = function(inst = {a_num: 42}) {
+	inst[$ 0] = 69;
+	return inst;
 }
 
-show_debug_message(sum(1));
-show_debug_message(sum(1, undefined));
-show_debug_message(sum(41));
-show_debug_message(sum(2, 2));
-";
+show_debug_message(make_struct());
+show_debug_message(make_struct({a_inf: infinity}));
+",
+);
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
 
