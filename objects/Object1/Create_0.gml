@@ -509,6 +509,7 @@ try {
     var env = new GMLspeakEnvironment();
     env.interface.compileFlags.checkForVariables = true;
     //env.interface.compileFlags.useVariableHash = true;
+	env.sharedGlobal = (method(global,function() {return self}))();
     var _code = @"
         rawr = 42;
         return foobar();
@@ -519,9 +520,13 @@ try {
     show_debug_message(_ex.message);   
 }
 
-var _code = "foo = \"bar\"; exit;";
+var _code = "foobar = function() {return foo};";
 var program = env.compileGML(env.parseString(_code));
-program();
+foo = "bar";
+global.foo = "rawr";
+program()
+show_debug_message(catspeak_execute(global.foobar));
+show_debug_message(global.foobar());
 
 
 // EXPERIMENTAL
@@ -549,3 +554,22 @@ surface_set_target(surf) {
 var i = 0; var j = 1; if (i == j) return 32; else return 34;";
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program());
+
+var _code = @"
+sum = function(a, b = 1) {
+	return a + b;
+}
+
+show_debug_message(sum(1));
+show_debug_message(sum(1, undefined));
+show_debug_message(sum(41));
+show_debug_message(sum(2, 2));
+";
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+program();
+
+foo = function(a = 42) {
+	return a;	
+}
+
+show_debug_message(foo(pointer_null));

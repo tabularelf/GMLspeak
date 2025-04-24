@@ -631,7 +631,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                     result: result,
                     key: key,
                     collection: collection,
-                    hash_: useVariableHash ? variable_get_hash(term.callee.key) : -1,
+                    hash_: useVariableHash && is_string(term.callee.key) ? variable_get_hash(term.callee.key) : -1,
                     dbgError : __dbgTerm(term.callee.key, "is not defined."),
                 }, useVariableHash ? __gmlspeak_expr_index_check_hash__ : 
                     __gmlspeak_expr_index_check__
@@ -722,7 +722,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(target.collection, "is not indexable"),
                 collection : __compileTerm(ctx, target.collection),
                 key : __compileTerm(ctx, target.key),
-                hash_ : useVariableHash ? variable_get_hash(target.key) : -1,
+                hash_ : useVariableHash && is_string(target.key.key) ? variable_get_hash(target.key.key) : -1,
                 value : value,
             }, func);
 			
@@ -731,7 +731,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
 					dbgError : __dbgTerm(target.key, "is not defined."),
 					collection : __compileTerm(ctx, target.collection),
 					key : __compileTerm(ctx, target.key),
-					hash_: useVariableHash ? variable_get_hash(target.key) : -1,
+					hash_: useVariableHash && is_string(target.key.key) ? variable_get_hash(target.key.key) : -1,
 					result: result,
 				}, useVariableHash ? 
 						__gmlspeak_expr_index_check_hash__ : 
@@ -821,7 +821,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.collection, "is not indexable"),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
-				hash_ : useVariableHash ? variable_get_hash(term.key.value) : -1,
+				hash_ : useVariableHash && is_string(term.key.value) ? variable_get_hash(term.key.value) : -1,
             }, getter);
         
         // Adds variable check
@@ -830,7 +830,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.key, "is not defined."),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
-                hash_: useVariableHash ? variable_get_hash(term.key.value) : -1,
+                hash_: useVariableHash && is_string(term.key.value) ? variable_get_hash(term.key.value) : -1,
                 result: result,
             }, useVariableHash ? 
                     __gmlspeak_expr_index_check_hash__ : 
@@ -1132,7 +1132,7 @@ function __gmlspeak_expr_index_check__() {
 /// @return {Any}
 function __gmlspeak_expr_index_check_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     if (__catspeak_is_withable(collection_)) {
         if (!struct_exists_from_hash(collection_, hash_)) {
             __catspeak_error(dbgError);
@@ -1146,7 +1146,7 @@ function __gmlspeak_expr_index_check_hash__() {
 /// @return {Any}
 function __gmlspeak_expr_index_get_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     if (is_array(collection_)) {
         return collection_[key_];
     } else if (__catspeak_is_withable(collection_)) {
@@ -1160,7 +1160,7 @@ function __gmlspeak_expr_index_get_hash__() {
 /// @return {Any}
 function __gmlspeak_expr_index_set_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     var value_ = value();
     if (is_array(collection_)) {
         collection_[@ key_] = value_;
@@ -1180,7 +1180,7 @@ function __gmlspeak_expr_index_set_hash__() {
 /// @return {Any}
 function __gmlspeak_expr_index_set_mult_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     var value_ = value();
     if (is_array(collection_)) {
         collection_[@ key_] *= value_;
@@ -1200,7 +1200,7 @@ function __gmlspeak_expr_index_set_mult_hash__() {
 /// @return {Any}
 function __gmlspeak_expr_index_set_div_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     var value_ = value();
     if (is_array(collection_)) {
         collection_[@ key_] /= value_;
@@ -1220,7 +1220,7 @@ function __gmlspeak_expr_index_set_div_hash__() {
 /// @return {Any}
 function __gmlspeak_expr_index_set_sub_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     var value_ = value();
     if (is_array(collection_)) {
         collection_[@ key_] -= value_;
@@ -1240,7 +1240,7 @@ function __gmlspeak_expr_index_set_sub_hash__() {
 /// @return {Any}
 function __gmlspeak_expr_index_set_plus_hash__() {
     var collection_ = collection();
-    var key_ = key();
+    // var key_ = key();
     var value_ = value();
     if (is_array(collection_)) {
         collection_[@ key_] += value_;

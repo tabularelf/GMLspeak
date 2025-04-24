@@ -219,9 +219,21 @@ function GMLspeakEnvironment() : CatspeakEnvironment() constructor {
 	interface.exposeMethod( 
 		"method",
 		__gmlspeak_method__,
+		"$$__BIND__$$",
+		function(_scope, _func) {
+			if (_scope == sharedGlobal) || (_scope == global) {
+				return _func;	
+			}
+			
+			return catspeak_method(_scope, _func);
+		},
 		"$$__IS_NOT_NULLISH__$$", 
 		function(value) {
 			return (value != undefined) && (value != pointer_null);	
+		},
+		"$$__OPTIONAL_ARGUMENT_SKIPPED__$$",
+		function(value) {
+			return !is_undefined(value);	
 		},
 		"$$__CURSOR_SPRITE__$$", 
 		function() {

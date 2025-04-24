@@ -312,6 +312,7 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             var conditions = __parseMatchArms();
             return ir.createMatch(value, conditions, lexer.getLocation());
         } else if (peeked == CatspeakToken.FUN) {
+			var optionalArguments = undefined;
             lexer.next();
             ir.pushFunction();
 			__pushFunctionName(lexer.getLocation());
@@ -323,7 +324,19 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 if (lexer.next() != CatspeakToken.IDENT) {
                     __ex("expected identifier in function arguments");
                 }
-                ir.allocArg(lexer.getValue(), lexer.getLocation());
+				var value = lexer.getValue();
+                ir.allocArg(value, lexer.getLocation());
+				if (lexer.peek() == CatspeakToken.ASSIGN) {
+					lexer.next();
+					optionalArguments ??= [];
+					array_push(optionalArguments, {
+						lhs: value,
+						rhs: __parseExpression(),
+						location: lexer.getLocation(),
+					});
+					//ir.createAssign(ir.createGet(value), ir.createCall(ir.createGet("$$__IS_NOT_NULLISH__$$"), 
+				}
+				
                 if (lexer.peek() == CatspeakToken.COMMA) {
                     lexer.next();
                 }
@@ -332,11 +345,29 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 __ex("expected closing ')' after function arguments");
             }
 			
-			
+			// Handle optional arguments
+			if (is_array(optionalArguments)) {
+				var i = 0;
+				repeat(array_length(optionalArguments)) {
+					var value = optionalArguments[i];
+					var lhs =  ir.createGet(value.lhs);
+					var rhs = ir.createAssign(
+					    __catspeak_operator_assign_from_token(CatspeakToken.ASSIGN),
+					    lhs,
+					    __parseAsSelf(value.rhs),
+					    value.location
+					);
+					var condition = ir.createCall(ir.createGet("$$__OPTIONAL_ARGUMENT_SKIPPED__$$"), [lhs], lexer.getLocation());
+					lhs = ir.createIf(condition, ir.createValue(undefined), rhs, lexer.getLocation());
+					ir.createStatement(lhs);
+					i += 1;
+				}
+			}			
             __parseStatements("fun");
+
 			ir.createStatement(ir.createValue(undefined)); // Force return `undefined`
 			__popFunctionName();
-            return ir.createCall(ir.createGet("method"), [ir.createSelf(), ir.popFunction()]);
+            return ir.createCall(ir.createGet("$$__BIND__$$"), [ir.createSelf(), ir.popFunction()]);
         } else {
             return __parseAssign();
         }
