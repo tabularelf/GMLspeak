@@ -556,13 +556,13 @@ var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program());
 
 var _code = 
-string_concat("sum = function(a, b = irandom(69)) {",
-	"return a + b;",
+string_concat("sum = function(a, b = 1, c = 2) {",
+	"return a + b + c;",
 "}",
 
 "show_debug_message(sum(1));",
 "show_debug_message(sum(1, undefined));",
-"show_debug_message(sum(41));",
+"show_debug_message(sum(41, , 0));",
 "show_debug_message(sum(2, 2));",
 @"
 make_struct = function(inst = {a_num: 42}) {

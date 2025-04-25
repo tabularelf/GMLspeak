@@ -963,7 +963,11 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
                 lexer.next();
                 var args = [];
                 while (__isNot(CatspeakToken.PAREN_RIGHT)) {
-                    array_push(args, __parseExpression());
+                    if (lexer.peek() == CatspeakToken.COMMA) {
+						array_push(args, ir.createValue(undefined, lexer.getLocation()));
+					} else {
+						array_push(args, __parseExpression());	
+					}
                     if (lexer.peek() == CatspeakToken.COMMA) {
                         lexer.next();
                     }
