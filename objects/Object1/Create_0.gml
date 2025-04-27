@@ -184,7 +184,7 @@ var _code = @'
 testSwitch = function(result) {
 	switch(result) {
 		case 0: show_debug_message("AAA");
-		case 1: show_debug_message("BBB");
+		case 1: show_debug_message("BBB"); 
 		case 2: show_debug_message("Do I show?");
 		case 3: return "switch/case: foo";
 		case "Hi": show_debug_message("I am a string!"); break;
@@ -192,6 +192,7 @@ testSwitch = function(result) {
 	}
 }
 ';
+
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 catspeak_execute(program, self);
@@ -576,6 +577,47 @@ show_debug_message(make_struct({a_inf: infinity}));
 );
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
+
+var _code = @"
+if (value) 
+foobar = true;
+else roobar = true;
+";
+
+//var _code = @'
+//	if !(invincible_type && invincible_timer) {
+//    stopsfx(charmName+"damage")                    
+//    hurt=1
+//    hsp=2.25*-xsc
+//    vsp=-4
+//    canstopjump=true
+//    state=""
+//    grounded=false
+//    oldsize = size;
+//    switch (size) {
+//        case "mini":
+//        case "basic":
+//            signal_emit(sig, "on_kill", charmName)
+//        break;
+//        case "big":
+//            size = "basic";
+//            playsfx(charmName+"damage")
+//        
+//        break;
+//        default:
+//            size = "big";
+//            playsfx(charmName+"damage")
+//        break;
+//    }
+//    grow = 60;
+//}
+//';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+value = true;
+catspeak_execute(program);
+value = false;
+catspeak_execute(program);
 
 foo = function(a = 42) {
 	return a;	

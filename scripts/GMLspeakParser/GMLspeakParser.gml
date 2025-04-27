@@ -877,13 +877,15 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
 						if (lexer.peek() == GMLspeakToken.CASE) {
 							lexer.next();	
 						}
-							
+						
+						lexer.peek();
 						array_push(statements, ir.createValue(lexer.getValue(), lexer.getLocation()));
+						lexer.next();
 						
 						if (lexer.peek() == CatspeakToken.COLON) {
 							lexer.next();	
 						}
-						lexer.next();
+						//lexer.next();
 					}
 				}
 			}
