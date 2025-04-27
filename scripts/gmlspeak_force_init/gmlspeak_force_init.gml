@@ -5,6 +5,10 @@ function gmlspeak_force_init() {
 	if (_init) return;
 	_init = true;
 	
-	GMLspeak = new GMLspeakEnvironment();
+	catspeak_force_init();
+	__gmlspeak_presets_init();
+	if (__GMLSPEAK_AUTO_INIT) {
+		GMLspeak = new GMLspeakEnvironment();
+	}
 }
 gmlspeak_force_init();

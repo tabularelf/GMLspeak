@@ -1088,6 +1088,13 @@ function GMLspeakParser(lexer, builder, interface = other.interface) constructor
             return ir.createValue(lexer.getValue(), lexer.getLocation());
         } else if (peeked == CatspeakToken.PARAMS) {
 			lexer.next();
+			// Detect 0-15 argument
+			var name = lexer.getLexeme();
+			if (string_length("argument") != string_length(name)) {
+				name = string_digits(name);
+				return ir.createParams(ir.createValue(real(name)), lexer.getLocation());
+			}
+			
 			if (lexer.peek() == CatspeakToken.BOX_LEFT) {
 				lexer.next();
 				var key_ = __parseExpression();

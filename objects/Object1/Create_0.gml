@@ -579,9 +579,9 @@ var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 program();
 
 var _code = @"
-if (value) 
-foobar = true;
-else roobar = true;
+if (value) {
+foobar = true;}
+else {roobar = true;}
 ";
 
 //var _code = @'
@@ -614,10 +614,17 @@ else roobar = true;
 //';
 
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
-value = true;
+self.value = true;
 catspeak_execute(program);
-value = false;
+self.value = false;
 catspeak_execute(program);
+
+var _code = @'
+	return argument0 * argument1;
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(program(2, 10));
 
 foo = function(a = 42) {
 	return a;	

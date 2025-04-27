@@ -15,7 +15,7 @@
 ///   - `12.3` (is a `CatspeakToken.VALUE`)
 ///   - `+`    (is a `CatspeakToken.PLUS`)
 enum GMLspeakToken {
-	__CATSPEAK_SIZE__ = CatspeakToken.__SIZE__,
+	__CATSPEAK_SIZE__ = 1000,
 	REPEAT,
 	FOR,
 	DO,
