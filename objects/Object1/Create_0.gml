@@ -460,6 +460,7 @@ try {
 } catch(_ex) {
 	show_debug_message(_ex.message);	
 }
+room_persistent = false;
 
 show_debug_message("Argument test");
 var _code = @'
@@ -618,6 +619,47 @@ self.value = true;
 catspeak_execute(program);
 self.value = false;
 catspeak_execute(program);
+	var env = new GMLspeakEnvironment(false);
+	env.interface.exposeFunction("show_debug_message", show_debug_message, "string", string);
+	var _code = @'
+		show_debug_message(string(a));
+		b += a;
+		show_debug_message(string(b));
+		b = 2;
+		a += b + global.c;
+		show_debug_message(string(a));	
+	';
+	
+var program = env.compile(env.parseString(_code));
+var _inst = {};
+try {
+	with(_inst) {
+		catspeak_execute(program);	
+	}
+	show_debug_message(_inst);
+} catch(_ex) {
+	show_debug_message(_ex.message);
+}
+
+env.interface.compileFlags.useGM8UndefinedVariableBehaviour = true;
+env.interface.compileFlags.GM8UndefinedVariableValue = 0;
+var program = env.compile(env.parseString(_code));
+
+try {
+	with(_inst) {
+		catspeak_execute(program);	
+	}
+	show_debug_message(_inst);
+} catch(_ex) {
+	show_debug_message(_ex.message);
+}
+
+try {
+	env.interface.compileFlags.checkForVariables = true;
+	var program = env.compile(env.parseString(_code));
+} catch(_) {
+	show_debug_message(_ex.message);	
+}
 
 var _code = @'
 	return argument0 * argument1;

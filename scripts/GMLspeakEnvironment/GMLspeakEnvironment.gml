@@ -9,6 +9,8 @@ function GMLspeakEnvironment(addAllConstants = true) : CatspeakEnvironment() con
     interface.compileFlags = {
         checkForVariables: false,
         useVariableHash: false,
+		useGM8UndefinedVariableBehaviour: false,
+		GM8UndefinedVariableValue: undefined,
     };
 	
 	if (addAllConstants) {

@@ -13,6 +13,7 @@
 ///
 /// @param {Struct} [interface]
 ///   The native interface to use.
+/// feather ignore all
 function GMLspeakCodegen(ir, interface=undefined) constructor {
     if (CATSPEAK_DEBUG_MODE) {
         __catspeak_check_init();
@@ -29,6 +30,15 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
     useVariableHash = (__getCompileFlag("useVariableHash") == true);
     /// @ignore
     checkForVariables = (__getCompileFlag("checkForVariables") == true);
+	/// @ignore
+	useGM8UndefinedVariableBehaviour = (__getCompileFlag("useGM8UndefinedVariableBehaviour") == true);
+	/// @ignore
+	GM8UndefinedVariableValue = __getCompileFlag("GM8UndefinedVariableValue");
+	
+	if (useGM8UndefinedVariableBehaviour) && ((checkForVariables) || (useVariableHash)) {
+		__gmlspeak_error("Cannot use \"checkForVariables\" or \" useVariableHash\" with \"useGM8UndefinedVariableBehaviour\".");
+		return;
+	}
 
     
     /// @ignore
@@ -631,7 +641,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                     result: result,
                     key: key,
                     collection: collection,
-                    hash_: useVariableHash && is_string(term.callee.key) ? variable_get_hash(term.callee.key) : -1,
+                    hash_: __variableHash(term.callee.key),
                     dbgError : __dbgTerm(term.callee.key, "is not defined."),
                 }, useVariableHash ? __gmlspeak_expr_index_check_hash__ : 
                     __gmlspeak_expr_index_check__
@@ -717,12 +727,13 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
             }
             var func = useVariableHash ? 
                         __assignLookupIndexHash[term.assignType] :
-                        __assignLookupIndex[term.assignType];
+                        (useGM8UndefinedVariableBehaviour ? __assignLookupIndexGM8[term.assignType] : __assignLookupIndex[term.assignType]);
             var result = method({
                 dbgError : __dbgTerm(target.collection, "is not indexable"),
                 collection : __compileTerm(ctx, target.collection),
                 key : __compileTerm(ctx, target.key),
-                hash_ : useVariableHash && is_string(target.key.key) ? variable_get_hash(target.key.key) : -1,
+                hash_ : __variableHash(target.key.value),
+				defaultValue: GM8UndefinedVariableValue,
                 value : value,
             }, func);
 			
@@ -731,7 +742,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
 					dbgError : __dbgTerm(target.key, "is not defined."),
 					collection : __compileTerm(ctx, target.collection),
 					key : __compileTerm(ctx, target.key),
-					hash_: useVariableHash && is_string(target.key.key) ? variable_get_hash(target.key.key) : -1,
+					hash_: __variableHash(target.key.value),
 					result: result,
 				}, useVariableHash ? 
 						__gmlspeak_expr_index_check_hash__ : 
@@ -780,10 +791,13 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 );
             }
 
-            var func = __assignLookupGlobal[term.assignType];
+            var func = useVariableHash ? __assignLookupGlobalHash[term.assignType] : 
+			(useGM8UndefinedVariableBehaviour ? __assignLookupGlobalGM8[term.assignType] : __assignLookupGlobal[term.assignType]);
             return method({
                 shared : sharedData,
                 name : name,
+				hash_: __variableHash(name),
+				defaultValue: GM8UndefinedVariableValue,
                 value : value,
             }, func);
         } else {
@@ -815,13 +829,14 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         
         var getter = useVariableHash ? 
             __gmlspeak_expr_index_get_hash__ : 
-            __catspeak_expr_index_get__;
+            (useGM8UndefinedVariableBehaviour ? __gmlspeak_expr_index_gm8_get__ : __catspeak_expr_index_get__);
         
         var result = method({
                 dbgError : __dbgTerm(term.collection, "is not indexable"),
                 collection : __compileTerm(ctx, term.collection),
+				defaultValue: GM8UndefinedVariableValue,
                 key : __compileTerm(ctx, term.key),
-				hash_ : useVariableHash && is_string(term.key.value) ? variable_get_hash(term.key.value) : -1,
+				hash_ : __variableHash(term.key.value)
             }, getter);
         
         // Adds variable check
@@ -830,7 +845,7 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
                 dbgError : __dbgTerm(term.key, "is not defined."),
                 collection : __compileTerm(ctx, term.collection),
                 key : __compileTerm(ctx, term.key),
-                hash_: useVariableHash && is_string(term.key.value) ? variable_get_hash(term.key.value) : -1,
+                hash_: __variableHash(term.key.value),
                 result: result,
             }, useVariableHash ? 
                     __gmlspeak_expr_index_check_hash__ : 
@@ -890,7 +905,10 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
             return method({
                 name : name,
                 shared : sharedData,
-            }, __catspeak_expr_global_get__);
+				defaultValue: GM8UndefinedVariableValue,
+				hash_ : __variableHash(name),
+            }, useVariableHash ? __gmlspeak_expr_global_get_hash__ :
+			(useGM8UndefinedVariableBehaviour ? __gmlspeak_expr_global_gm8_get__ : __catspeak_expr_global_get__));
         }
     };
 
@@ -993,6 +1011,22 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         }
         return prod(ctx, term);
     };
+	
+	/// @param {Any} key
+	/// @return {Real}
+	/// @ignore
+	static __variableHash = function(_key) {
+		try {
+			if (useVariableHash && is_string(_key)) {
+				return variable_get_hash(_key);
+			}	
+		} catch(_) {
+			__gmlspeak_error("You are using a version of GameMaker that does not have variable_get_hash");
+			return;
+		}
+		
+		return -1;
+	}
 
     /// @ignore
     static __productionLookup = (function () {
@@ -1050,6 +1084,17 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         db[@ CatspeakAssign.PLUS] = __gmlspeak_expr_index_set_plus_hash__;
         return db;
     })();
+	
+	/// @ignore
+    static __assignLookupIndexGM8 = (function () {
+        var db = array_create(CatspeakAssign.__SIZE__, undefined);
+        db[@ CatspeakAssign.VANILLA] = __catspeak_expr_index_set__;
+        db[@ CatspeakAssign.MULTIPLY] = __gmlspeak_expr_index_set_gm8_mult__;
+        db[@ CatspeakAssign.DIVIDE] = __gmlspeak_expr_index_set_gm8_div__;
+        db[@ CatspeakAssign.SUBTRACT] = __gmlspeak_expr_index_set_gm8_sub__;
+        db[@ CatspeakAssign.PLUS] = __gmlspeak_expr_index_set_gm8_plus__;
+        return db;
+    })();
 
     /// @ignore
     static __assignLookupProperty = (function () {
@@ -1081,6 +1126,28 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
         db[@ CatspeakAssign.DIVIDE] = __catspeak_expr_global_set_div__;
         db[@ CatspeakAssign.SUBTRACT] = __catspeak_expr_global_set_sub__;
         db[@ CatspeakAssign.PLUS] = __catspeak_expr_global_set_plus__;
+        return db;
+    })();
+	
+	/// @ignore
+    static __assignLookupGlobalHash = (function () {
+        var db = array_create(CatspeakAssign.__SIZE__, undefined);
+        db[@ CatspeakAssign.VANILLA] = __gmlspeak_expr_global_set_hash__;
+        db[@ CatspeakAssign.MULTIPLY] = __gmlspeak_expr_global_set_mult_hash__;
+        db[@ CatspeakAssign.DIVIDE] = __gmlspeak_expr_global_set_div_hash__;
+        db[@ CatspeakAssign.SUBTRACT] = __gmlspeak_expr_global_set_sub_hash__;
+        db[@ CatspeakAssign.PLUS] = __gmlspeak_expr_global_set_plus_hash__;
+        return db;
+    })();
+	
+	/// @ignore
+    static __assignLookupGlobalGM8 = (function () {
+        var db = array_create(CatspeakAssign.__SIZE__, undefined);
+        db[@ CatspeakAssign.VANILLA] = __catspeak_expr_global_set__;
+        db[@ CatspeakAssign.MULTIPLY] = __gmlspeak_expr_global_set_gm8_mult__;
+        db[@ CatspeakAssign.DIVIDE] = __gmlspeak_expr_global_set_gm8_div__;
+        db[@ CatspeakAssign.SUBTRACT] = __gmlspeak_expr_global_set_gm8_sub__;
+        db[@ CatspeakAssign.PLUS] = __gmlspeak_expr_global_set_gm8_plus__;
         return db;
     })();
     
@@ -1126,6 +1193,48 @@ function __gmlspeak_expr_index_check__() {
     }
     
     return result();
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_get_hash__() {
+    return struct_get_from_hash(shared.globals, hash_);
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_hash__() {
+    struct_set_from_hash(shared.globals, hash_, value());
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_minus_hash__() {
+    struct_set_from_hash(shared.globals, hash_, struct_get_from_hash(shared.globals, hash_) - value());
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_plus_hash__() {
+    struct_set_from_hash(shared.globals, hash_, struct_get_from_hash(shared.globals, hash_) + value());
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_sub_hash__() {
+    struct_set_from_hash(shared.globals, hash_, struct_get_from_hash(shared.globals, hash_) - value());
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_mult_hash__() {
+    struct_set_from_hash(shared.globals, hash_, struct_get_from_hash(shared.globals, hash_) * value());
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_div_hash__() {
+    struct_set_from_hash(shared.globals, hash_, struct_get_from_hash(shared.globals, hash_) / value());
 }
 
 // @ignore
@@ -1251,6 +1360,160 @@ function __gmlspeak_expr_index_set_plus_hash__() {
             return;
         }
         struct_set_from_hash(collection_, hash_, __gmlspeak_expr_index_get_hash__() + value_);
+    } else {
+        __catspeak_error_got(dbgError, collection_);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_gm8_get__() {
+	if (!variable_struct_exists(shared.globals, name)) {
+		shared.globals[$ name] = defaultValue;
+	}
+    return shared.globals[$ name];
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_gm8_mult__() {
+	if (!variable_struct_exists(shared.globals, name)) {
+		shared.globals[$ name] = defaultValue;
+	}
+    shared.globals[$ name] *= value();
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_gm8_div__() {
+	if (!variable_struct_exists(shared.globals, name)) {
+		shared.globals[$ name] = defaultValue;
+	}
+    shared.globals[$ name] /= value();
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_gm8_sub__() {
+	if (!variable_struct_exists(shared.globals, name)) {
+		shared.globals[$ name] = defaultValue;
+	}
+    shared.globals[$ name] -= value();
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_global_set_gm8_plus__() {
+	if (!variable_struct_exists(shared.globals, name)) {
+		shared.globals[$ name] = defaultValue;
+	}
+    shared.globals[$ name] += value();
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_index_gm8_get__() {
+    var collection_ = collection();
+    var key_ = key();
+    if (is_array(collection_)) {
+        return collection_[key_];
+    } else if (__catspeak_is_withable(collection_)) {
+		if (!variable_struct_exists(collection_, key_)) {
+			collection_[$ key_] = defaultValue;
+		}
+        return collection_[$ key_];
+    } else {
+        __catspeak_error_got(dbgError, collection_);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_index_set_gm8_mult__() {
+    var collection_ = collection();
+    var key_ = key();
+    var value_ = value();
+    if (is_array(collection_)) {
+        collection_[@ key_] *= value_;
+    } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] * value_);
+            return;
+        }
+		if (!variable_struct_exists(collection_, key_)) {
+			collection_[$ key_] = defaultValue;
+		}
+        collection_[$ key_] *= value_;
+    } else {
+        __catspeak_error_got(dbgError, collection_);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_index_set_gm8_div__() {
+    var collection_ = collection();
+    var key_ = key();
+    var value_ = value();
+    if (is_array(collection_)) {
+        collection_[@ key_] /= value_;
+    } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] / value_);
+            return;
+        }
+		if (!variable_struct_exists(collection_, key_)) {
+			collection_[$ key_] = defaultValue;
+		}
+        collection_[$ key_] /= value_;
+    } else {
+        __catspeak_error_got(dbgError, collection_);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_index_set_gm8_sub__() {
+    var collection_ = collection();
+    var key_ = key();
+    var value_ = value();
+    if (is_array(collection_)) {
+        collection_[@ key_] -= value_;
+    } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] - value_);
+            return;
+        }
+		if (!variable_struct_exists(collection_, key_)) {
+			collection_[$ key_] = defaultValue;
+		}
+        collection_[$ key_] -= value_;
+    } else {
+        __catspeak_error_got(dbgError, collection_);
+    }
+}
+
+/// @ignore
+/// @return {Any}
+function __gmlspeak_expr_index_set_gm8_plus__() {
+    var collection_ = collection();
+    var key_ = key();
+    var value_ = value();
+    if (is_array(collection_)) {
+        collection_[@ key_] += value_;
+    } else if (__catspeak_is_withable(collection_)) {
+        var specialSet = global.__catspeakGmlSpecialVars[$ key_];
+        if (specialSet != undefined) {
+            specialSet(collection_, collection_[$ key_] + value_);
+            return;
+        }
+		if (!variable_struct_exists(collection_, key_)) {
+			collection_[$ key_] = defaultValue;
+		}
+        collection_[$ key_] += value_;
     } else {
         __catspeak_error_got(dbgError, collection_);
     }
