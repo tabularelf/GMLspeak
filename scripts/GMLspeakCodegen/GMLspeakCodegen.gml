@@ -31,12 +31,12 @@ function GMLspeakCodegen(ir, interface=undefined) constructor {
     /// @ignore
     checkForVariables = (__getCompileFlag("checkForVariables") == true);
 	/// @ignore
-	useGM8UndefinedVariableBehaviour = (__getCompileFlag("useGM8UndefinedVariableBehaviour") == true);
+	useGM8UndefinedVariableBehaviour = (__getCompileFlag("useGM8UndefinedVariableBehaviourThisIsReallyBadAndAwfulYouWillComeAcrossSoManyErrorsAndYouCommitTheUltimateGameMakerSin_YouWillMeetGod_AndThePopeHimselfWillSmiteYouDown") == true);
 	/// @ignore
 	GM8UndefinedVariableValue = __getCompileFlag("GM8UndefinedVariableValue");
 	
 	if (useGM8UndefinedVariableBehaviour) && ((checkForVariables) || (useVariableHash)) {
-		__gmlspeak_error("Cannot use \"checkForVariables\" or \" useVariableHash\" with \"useGM8UndefinedVariableBehaviour\".");
+		__gmlspeak_error("Cannot use \"checkForVariables\" or \" useVariableHash\" with\n\"useGM8UndefinedVariableBehaviourThisIsReallyBadAndAwfulYouWillComeAcrossSoManyErrorsAndYouCommitTheUltimateGameMakerSin_YouWillMeetGod_AndThePopeHimselfWillSmiteYouDown\".");
 		return;
 	}
 

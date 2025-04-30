@@ -620,6 +620,7 @@ catspeak_execute(program);
 self.value = false;
 catspeak_execute(program);
 	var env = new GMLspeakEnvironment(false);
+	env.interface.compileFlags.checkForVariables = false;
 	env.interface.exposeFunction("show_debug_message", show_debug_message, "string", string);
 	var _code = @'
 		show_debug_message(string(a));
@@ -641,7 +642,7 @@ try {
 	show_debug_message(_ex.message);
 }
 
-env.interface.compileFlags.useGM8UndefinedVariableBehaviour = true;
+env.interface.compileFlags.useGM8UndefinedVariableBehaviourThisIsReallyBadAndAwfulYouWillComeAcrossSoManyErrorsAndYouCommitTheUltimateGameMakerSin_YouWillMeetGod_AndThePopeHimselfWillSmiteYouDown = true;
 env.interface.compileFlags.GM8UndefinedVariableValue = 0;
 var program = env.compile(env.parseString(_code));
 
@@ -658,7 +659,7 @@ try {
 	env.interface.compileFlags.checkForVariables = true;
 	var program = env.compile(env.parseString(_code));
 } catch(_) {
-	show_debug_message(_ex.message);	
+	show_debug_message(_.message);	
 }
 
 var _code = @'

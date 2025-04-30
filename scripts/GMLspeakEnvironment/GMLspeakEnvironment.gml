@@ -7,9 +7,9 @@ function GMLspeakEnvironment(addAllConstants = true) : CatspeakEnvironment() con
 	self.canWriteRoomProperties = false;
 	enableSharedGlobal(true);
     interface.compileFlags = {
-        checkForVariables: false,
+        checkForVariables: true,
         useVariableHash: false,
-		useGM8UndefinedVariableBehaviour: false,
+		useGM8UndefinedVariableBehaviourThisIsReallyBadAndAwfulYouWillComeAcrossSoManyErrorsAndYouCommitTheUltimateGameMakerSin_YouWillMeetGod_AndThePopeHimselfWillSmiteYouDown: false,
 		GM8UndefinedVariableValue: undefined,
     };
 	
