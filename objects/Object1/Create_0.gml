@@ -669,6 +669,16 @@ var _code = @'
 var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
 show_debug_message(program(2, 10));
 
+var _code = @'
+	#region Foo, bar!
+	show_debug_message("A!");
+	#endregion
+';
+
+var program = gmlspeak.compileGML(gmlspeak.parseString(_code));
+show_debug_message(program());
+
+
 foo = function(a = 42) {
 	return a;	
 }

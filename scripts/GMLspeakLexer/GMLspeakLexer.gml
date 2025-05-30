@@ -557,8 +557,42 @@ function GMLspeakLexer(
                 cR = ds_stack_pop(digitStack);
                 cR = cR | (ds_stack_pop(digitStack) << 4);
             } else {
-                // invalid
-                token = CatspeakToken.OTHER;
+                // Check for comment, hacky as hell
+				var charNext_ = charNext;
+				var char_ = 0;
+				if (digitCount == 1) {
+					char_ = ds_stack_top(digitStack) + ord("a") - 10;
+				}
+				if (charNext_ == ord("r") || digitCount == 1) {
+					var word_ = "";
+					if (digitCount == 1) {
+						word_ += chr(char_);
+					}
+					while(charNext_ != ord("\n") && charNext_ != ord("\r") && charNext_ != ord(" ")) {
+						word_ += chr(charNext_);
+						__advance();
+						charNext_ = charNext;
+					}
+					
+					if (word_ == "region" || word_ == "endregion") {
+						token = CatspeakToken.COMMENT;	
+						// Keep on advancing until we get to the end
+						while (true) {
+							var charNext_ = charNext;
+							if (
+							    charNext_ == ord("\n") ||
+							    charNext_ == ord("\r") ||
+							    charNext_ == 0
+							) {
+							    break;
+							}
+							__advance();
+						}
+					}
+				} else {
+					 // invalid
+					 token = CatspeakToken.OTHER;	
+				}
             }
             ds_stack_destroy(digitStack);
             value = cR | (cG << 8) | (cB << 16) | (cA << 24);
