@@ -1,0 +1,22 @@
+name: Bug Report
+description: File a bug with a specific issue in regards to GMLspeak!
+labels: ["bug"]
+body:
+  - type: input
+    attributes:
+      label: What version of GMLspeak & Catspeak are you using?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: Please provide an extensive description and or provide images here.
+    validations:
+      required: true
+  - type: input
+    id: expected
+    attributes:
+      label: Expected Change
+      description: If it is not obvious from your Description text, what difference would you expect to see once this is fixed?
+    validations:
+      required: false
