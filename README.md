@@ -1,3 +1,6 @@
+# Notice
+GMLspeak is currently not in active development. For the time being, please use [Catspeak](https://github.com/katsaii/catspeak-lang).
+
 # GMLspeak v1.2.2
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)!
  
