@@ -1,5 +1,5 @@
 # Notice
-GMLspeak is currently not in active development. For the time being, please use [Catspeak](https://github.com/katsaii/catspeak-lang).
+GMLspeak is no longer being worked on at this time. Please consider using [Catspeak](https://github.com/katsaii/catspeak-lang), which GMLspeak is built upon. Or use [GMLC](https://github.com/tinkerer-red/GMLC) instead.
 
 # GMLspeak v1.2.2
  A GML parser/lexer addon for [Catspeak](https://github.com/katsaii/catspeak-lang)!
